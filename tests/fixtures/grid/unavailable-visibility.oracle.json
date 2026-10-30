@@ -1,0 +1,21 @@
+{
+  "spreadsheetId": "synthetic-unavailable-visibility-002",
+  "sheetId": 200,
+  "title": "MissingMetadataTab",
+  "sheetType": "GRID",
+  "visibilityAssessment": {
+    "hasRowMetadata": false,
+    "hasColumnMetadata": false,
+    "hasSavedFilterViews": true,
+    "savedFilterViewsCount": 1,
+    "visibilityEvidenceAvailable": false,
+    "reasons": [
+      "ROW_METADATA_OMITTED_IN_RESPONSE",
+      "COLUMN_METADATA_OMITTED_IN_RESPONSE",
+      "DIMENSION_VISIBILITY_PROVENANCE_UNAVAILABLE"
+    ],
+    "note": "Saved filterViews define named filter configurations and do not populate rowMetadata. Missing dimension metadata prevents determining api-visible rows/columns.",
+    "requiredPolicyAction": "DISABLE_API_VISIBLE_AND_REQUIRE_USER_CHOICE",
+    "mustNotSilentlyFallback": true
+  }
+}

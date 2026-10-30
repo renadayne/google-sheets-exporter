@@ -1,0 +1,228 @@
+{
+  "spreadsheetId": "synthetic-fidelity-spreadsheet-001",
+  "expectedSheetsCount": 3,
+  "sheetOrderByIndex": [
+    { "index": 0, "sheetId": 100, "title": "SparseTab", "sheetType": "GRID" },
+    { "index": 1, "sheetId": 101, "title": "ValuesAndVisibility", "sheetType": "GRID" },
+    { "index": 2, "sheetId": 102, "title": "SummaryChart", "sheetType": "OBJECT" }
+  ],
+  "sheets": [
+    {
+      "sheetId": 100,
+      "title": "SparseTab",
+      "sheetType": "GRID",
+      "chunksCount": 3,
+      "expectedCells": [
+        {
+          "absoluteRow": 0,
+          "absoluteCol": 0,
+          "a1": "A1",
+          "chunkIndex": 0,
+          "relativeRow": 0,
+          "relativeCol": 0,
+          "kind": "string",
+          "raw": "A1 Header",
+          "formatted": "A1 Header",
+          "isFormula": false
+        },
+        {
+          "absoluteRow": 49,
+          "absoluteCol": 3,
+          "a1": "D50",
+          "chunkIndex": 1,
+          "relativeRow": 0,
+          "relativeCol": 0,
+          "kind": "number",
+          "raw": 42.5,
+          "formatted": "$42.50",
+          "isFormula": false
+        },
+        {
+          "absoluteRow": 89999,
+          "absoluteCol": 25,
+          "a1": "Z90000",
+          "chunkIndex": 2,
+          "relativeRow": 0,
+          "relativeCol": 0,
+          "kind": "boolean",
+          "raw": true,
+          "formatted": "TRUE",
+          "isFormula": false
+        }
+      ]
+    },
+    {
+      "sheetId": 101,
+      "title": "ValuesAndVisibility",
+      "sheetType": "GRID",
+      "chunksCount": 1,
+      "chunkOrigin": {
+        "startRow": 4,
+        "startColumn": 2,
+        "a1": "C5"
+      },
+      "merges": [
+        {
+          "a1Range": "C5:D5",
+          "startRowIndex": 4,
+          "endRowIndex": 5,
+          "startColumnIndex": 2,
+          "endColumnIndex": 4,
+          "anchor": {
+            "absoluteRow": 4,
+            "absoluteCol": 2,
+            "a1": "C5",
+            "hasValue": true,
+            "anchorValue": "Anchor Cell C5"
+          },
+          "nonAnchorPositions": [
+            { "absoluteRow": 4, "absoluteCol": 3, "a1": "D5", "mustNotFillDown": true }
+          ]
+        }
+      ],
+      "visibility": {
+        "rowMetadata": [
+          { "offset": 0, "absoluteRow": 4, "a1Row": 5, "hiddenByUser": false, "hiddenByFilter": false, "isVisible": true },
+          { "offset": 1, "absoluteRow": 5, "a1Row": 6, "hiddenByUser": true, "hiddenByFilter": false, "isVisible": false },
+          { "offset": 2, "absoluteRow": 6, "a1Row": 7, "hiddenByUser": false, "hiddenByFilter": true, "isVisible": false }
+        ],
+        "columnMetadata": [
+          { "offset": 0, "absoluteCol": 2, "a1Col": "C", "hiddenByUser": false, "isVisible": true },
+          { "offset": 1, "absoluteCol": 3, "a1Col": "D", "hiddenByUser": true, "isVisible": false },
+          { "offset": 2, "absoluteCol": 4, "a1Col": "E", "hiddenByUser": false, "isVisible": true },
+          { "offset": 3, "absoluteCol": 5, "a1Col": "F", "hiddenByUser": false, "isVisible": true }
+        ]
+      },
+      "expectedCells": [
+        {
+          "chunkIndex": 0,
+          "relativeRow": 0,
+          "relativeCol": 0,
+          "absoluteRow": 4,
+          "absoluteCol": 2,
+          "a1": "C5",
+          "kind": "string",
+          "raw": "Anchor Cell C5",
+          "formatted": "Anchor Cell C5",
+          "isFormula": false,
+          "isMergeAnchor": true,
+          "isBlankOmission": false,
+          "isExplicitEmptyString": false
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 0,
+          "relativeCol": 1,
+          "absoluteRow": 4,
+          "absoluteCol": 3,
+          "a1": "D5",
+          "kind": "blank_cell",
+          "raw": null,
+          "formatted": null,
+          "isExplicitEmptyString": false,
+          "isBlankOmission": true,
+          "inMergeArea": true
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 0,
+          "relativeCol": 2,
+          "absoluteRow": 4,
+          "absoluteCol": 4,
+          "a1": "E5",
+          "kind": "string",
+          "raw": "",
+          "formatted": "",
+          "isFormula": false,
+          "isExplicitEmptyString": true,
+          "isBlankOmission": false
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 0,
+          "relativeCol": 3,
+          "absoluteRow": 4,
+          "absoluteCol": 5,
+          "a1": "F5",
+          "kind": "omitted_cell",
+          "raw": null,
+          "formatted": null,
+          "isExplicitEmptyString": false,
+          "isBlankOmission": true
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 1,
+          "relativeCol": 0,
+          "absoluteRow": 5,
+          "absoluteCol": 2,
+          "a1": "C6",
+          "kind": "date_serial",
+          "raw": 45200,
+          "formatted": "2023-10-01",
+          "isFormula": false,
+          "numberFormatType": "DATE",
+          "pattern": "yyyy-mm-dd",
+          "doNotCastToDate": true,
+          "isBlankOmission": false,
+          "isExplicitEmptyString": false
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 1,
+          "relativeCol": 1,
+          "absoluteRow": 5,
+          "absoluteCol": 3,
+          "a1": "D6",
+          "kind": "number",
+          "raw": 30,
+          "formatted": "30",
+          "isFormula": true,
+          "formulaText": "=SUM(10, 20)",
+          "isBlankOmission": false,
+          "isExplicitEmptyString": false
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 1,
+          "relativeCol": 2,
+          "absoluteRow": 5,
+          "absoluteCol": 4,
+          "a1": "E6",
+          "kind": "string",
+          "raw": "",
+          "formatted": "",
+          "isFormula": true,
+          "formulaText": "=IF(TRUE, \"\", \"fallback\")",
+          "isExplicitEmptyString": true,
+          "isBlankOmission": false
+        },
+        {
+          "chunkIndex": 0,
+          "relativeRow": 1,
+          "relativeCol": 3,
+          "absoluteRow": 5,
+          "absoluteCol": 5,
+          "a1": "F6",
+          "kind": "error",
+          "errorType": "DIVIDE_BY_ZERO",
+          "errorMessage": "Evaluation Error: divide by zero",
+          "formatted": "#DIV/0!",
+          "isFormula": true,
+          "formulaText": "=1/0",
+          "isBlankOmission": false,
+          "isExplicitEmptyString": false
+        }
+      ]
+    },
+    {
+      "sheetId": 102,
+      "title": "SummaryChart",
+      "sheetType": "OBJECT",
+      "isGrid": false,
+      "hasGridData": false,
+      "limitation": "NON_GRID_SHEET_UNSUPPORTED",
+      "remedy": "DETECT_AND_WARN_PRE_JOB_NO_SILENT_SKIP"
+    }
+  ]
+}

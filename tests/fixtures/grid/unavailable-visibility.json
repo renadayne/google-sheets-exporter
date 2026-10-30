@@ -1,0 +1,52 @@
+{
+  "spreadsheetId": "synthetic-unavailable-visibility-002",
+  "properties": {
+    "title": "Synthetic Unavailable Visibility Workbook",
+    "locale": "en_US",
+    "timeZone": "UTC"
+  },
+  "sheets": [
+    {
+      "properties": {
+        "sheetId": 200,
+        "title": "MissingMetadataTab",
+        "index": 0,
+        "sheetType": "GRID",
+        "gridProperties": {
+          "rowCount": 50,
+          "columnCount": 10
+        }
+      },
+      "filterViews": [
+        {
+          "filterViewId": 9999,
+          "title": "Saved Filter View 1",
+          "range": {
+            "sheetId": 200,
+            "startRowIndex": 0,
+            "endRowIndex": 50,
+            "startColumnIndex": 0,
+            "endColumnIndex": 10
+          }
+        }
+      ],
+      "data": [
+        {
+          "startRow": 0,
+          "startColumn": 0,
+          "rowData": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": { "stringValue": "Sample Cell" },
+                  "effectiveValue": { "stringValue": "Sample Cell" },
+                  "formattedValue": "Sample Cell"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

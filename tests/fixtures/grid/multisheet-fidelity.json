@@ -1,0 +1,183 @@
+{
+  "spreadsheetId": "synthetic-fidelity-spreadsheet-001",
+  "properties": {
+    "title": "Synthetic GridData Fidelity Workbook",
+    "locale": "en_US",
+    "autoRecalc": "ON_CHANGE",
+    "timeZone": "America/New_York",
+    "defaultFormat": {
+      "backgroundColor": { "red": 1, "green": 1, "blue": 1 },
+      "padding": { "top": 2, "right": 3, "bottom": 2, "left": 3 },
+      "verticalAlignment": "BOTTOM",
+      "wrapStrategy": "OVERFLOW_CELL"
+    }
+  },
+  "sheets": [
+    {
+      "properties": {
+        "sheetId": 100,
+        "title": "SparseTab",
+        "index": 0,
+        "sheetType": "GRID",
+        "gridProperties": {
+          "rowCount": 100000,
+          "columnCount": 30
+        }
+      },
+      "data": [
+        {
+          "startRow": 0,
+          "startColumn": 0,
+          "rowData": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": { "stringValue": "A1 Header" },
+                  "effectiveValue": { "stringValue": "A1 Header" },
+                  "formattedValue": "A1 Header"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "startRow": 49,
+          "startColumn": 3,
+          "rowData": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": { "numberValue": 42.5 },
+                  "effectiveValue": { "numberValue": 42.5 },
+                  "formattedValue": "$42.50"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "startRow": 89999,
+          "startColumn": 25,
+          "rowData": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": { "boolValue": true },
+                  "effectiveValue": { "boolValue": true },
+                  "formattedValue": "TRUE"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "properties": {
+        "sheetId": 101,
+        "title": "ValuesAndVisibility",
+        "index": 1,
+        "sheetType": "GRID",
+        "gridProperties": {
+          "rowCount": 100,
+          "columnCount": 20
+        }
+      },
+      "merges": [
+        {
+          "sheetId": 101,
+          "startRowIndex": 4,
+          "endRowIndex": 5,
+          "startColumnIndex": 2,
+          "endColumnIndex": 4
+        }
+      ],
+      "basicFilter": {
+        "range": {
+          "sheetId": 101,
+          "startRowIndex": 4,
+          "endRowIndex": 10,
+          "startColumnIndex": 2,
+          "endColumnIndex": 6
+        }
+      },
+      "data": [
+        {
+          "startRow": 4,
+          "startColumn": 2,
+          "rowMetadata": [
+            { "pixelSize": 21, "hiddenByUser": false, "hiddenByFilter": false },
+            { "pixelSize": 21, "hiddenByUser": true, "hiddenByFilter": false },
+            { "pixelSize": 21, "hiddenByUser": false, "hiddenByFilter": true }
+          ],
+          "columnMetadata": [
+            { "pixelSize": 100, "hiddenByUser": false },
+            { "pixelSize": 120, "hiddenByUser": true },
+            { "pixelSize": 80, "hiddenByUser": false },
+            { "pixelSize": 80, "hiddenByUser": false }
+          ],
+          "rowData": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": { "stringValue": "Anchor Cell C5" },
+                  "effectiveValue": { "stringValue": "Anchor Cell C5" },
+                  "formattedValue": "Anchor Cell C5"
+                },
+                {},
+                {
+                  "userEnteredValue": { "stringValue": "" },
+                  "effectiveValue": { "stringValue": "" },
+                  "formattedValue": ""
+                }
+              ]
+            },
+            {
+              "values": [
+                {
+                  "userEnteredValue": { "numberValue": 45200 },
+                  "effectiveValue": { "numberValue": 45200 },
+                  "formattedValue": "2023-10-01",
+                  "effectiveFormat": {
+                    "numberFormat": {
+                      "type": "DATE",
+                      "pattern": "yyyy-mm-dd"
+                    }
+                  }
+                },
+                {
+                  "userEnteredValue": { "formulaValue": "=SUM(10, 20)" },
+                  "effectiveValue": { "numberValue": 30 },
+                  "formattedValue": "30"
+                },
+                {
+                  "userEnteredValue": { "formulaValue": "=IF(TRUE, \"\", \"fallback\")" },
+                  "effectiveValue": { "stringValue": "" },
+                  "formattedValue": ""
+                },
+                {
+                  "userEnteredValue": { "formulaValue": "=1/0" },
+                  "effectiveValue": {
+                    "errorValue": {
+                      "type": "DIVIDE_BY_ZERO",
+                      "message": "Evaluation Error: divide by zero"
+                    }
+                  },
+                  "formattedValue": "#DIV/0!"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "properties": {
+        "sheetId": 102,
+        "title": "SummaryChart",
+        "index": 2,
+        "sheetType": "OBJECT"
+      }
+    }
+  ]
+}
