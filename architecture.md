@@ -76,6 +76,8 @@ Contracts được T08 freeze trước các adapter. Tên dưới đây là norm
 
 Ports: `AuthPort.signIn/getContext/getToken/signOut`; `PermissionPort.check(source,context,signal)`; `SheetsPort.getMetadata/readGrid(rect,signal)`; `WriterPort.begin/append/finalize/abort`; `DownloadPort.publish(artifact,signal)`; injected Clock/Random/Fetch for tests. `readGrid` requires controller-granted permitted context; actual token access stays network-side.
 
+Domain freeze after T08a review: `src/contracts/domain.ts` is normative. Non-grid/unknown sheets may omit dimensions; validators must not invent zero bounds. `evidenceRevision` identifies local evidence/rule format, not an immutable Google ACL revision. Report metadata explicitly includes selected output format and visibility. Exclusions use compact zero-based half-open dimension intervals. Port/message contracts remain T08b/T08c work.
+
 ## E. Scope, coordinates và visibility
 
 1. Default chọn tất cả tabs không hidden, full **allocated grid** từng tab: `[0,rowCount) x [0,columnCount)`. Hiện chính xác bounds và cảnh báo không phải used range. Hidden tabs opt-in. `gid` chỉ highlight.
@@ -98,20 +100,25 @@ Errors giữ `kind:error`, code/message nguồn đã sanitize; JSON tagged error
 
 ## G. JSON v1 và report
 
-Top-level keys bắt buộc: schemaVersion=`1.0`, source{id,title,locale,timeZone}, export{startedAt,producedAt,mode,complete,consistency,warnings}, sheets. Thời gian ISO 8601 UTC; `complete=true` chỉ nghĩa đủ selected scope, **không** atomic snapshot. File lỗi/partial không được publish.
+`ExportReport` chứa metadata; `JsonExportDocument` thêm `sheets` bắt buộc. Report v1 có schemaVersion, source, export{startedAt,producedAt,mode,format,visibility,complete,consistency,warnings}, selectedScopes, sheetOrder, limitsVersion, nameMappings và exclusions. JSON file chỉ có complete=true, format=json, và không được báo known source change. Thời gian ISO 8601 UTC; complete chỉ nghĩa đủ selected scope, không phải atomic snapshot. File lỗi/partial không được publish.
 
 ```json
 {
   "schemaVersion": "1.0",
   "source": {"id":"fixture-id","title":"Demo","locale":"en_US","timeZone":"Asia/Ho_Chi_Minh"},
-  "export": {"startedAt":"2026-10-30T02:00:00Z","producedAt":"2026-10-30T02:00:04Z","mode":"raw","complete":true,"consistency":"not_atomic_no_change_detected","warnings":[]},
-  "sheets": [{"id":0,"title":"Data","index":0,"scope":{"r0":0,"c0":0,"r1":90000,"c1":26},"visibility":{"mode":"include_all","excludedRows":[],"excludedColumns":[]},"cells":[{"r":0,"c":0,"kind":"string","value":"00123"},{"r":89999,"c":25,"kind":"number","value":42}]}]
+  "export": {"startedAt":"2026-10-30T02:00:00Z","producedAt":"2026-10-30T02:00:04Z","mode":"raw","format":"json","visibility":"include_all","complete":true,"consistency":"not_atomic_no_change_detected","warnings":[]},
+  "selectedScopes": [{"sheetId":0,"rect":{"sheetId":0,"r0":0,"c0":0,"r1":90000,"c1":26}}],
+  "sheetOrder": [0],
+  "limitsVersion": "v1-proposed",
+  "nameMappings": [{"sheetId":0,"originalTitle":"Data","exportedName":"Data"}],
+  "exclusions": [],
+  "sheets": [{"id":0,"title":"Data","index":0,"scope":{"sheetId":0,"r0":0,"c0":0,"r1":90000,"c1":26},"visibility":{"mode":"include_all","excludedRows":[],"excludedColumns":[]},"cells":[{"r":0,"c":0,"kind":"string","value":"00123"},{"r":89999,"c":25,"kind":"number","value":42}]}]
 }
 ```
 
 Cells sorted r,c; unique coordinates within scope; nonfinite numbers reject; error cells use value `{code,message}`. JSON Schema draft 2020-12 ở `src/contracts/export.schema.json` sẽ được tạo T09, additionalProperties=false tại boundaries; future incompatible change tăng major. Warnings là `{code,message,sheetId?}`, không raw HTTP bodies.
 
-Shared ExportReport thêm nameMappings, exportedScopes, exclusions, csvTransformCounts, limitsVersion và source observations. Multi CSV ZIP chứa `manifest.json` report. XLSX dùng companion `<base>.metadata.json` (cùng download operation gồm 2 files, không thêm metadata worksheet làm sai AC-01). Single CSV dùng UI summary và nút tải metadata riêng; CSV vẫn single `.csv` theo FR-09. Browser có thể chặn multiple downloads: báo từng file status, cho retry metadata sau recheck, không claim cả bộ complete nếu chưa tải đủ. JSON tích hợp report fields tương ứng; source observations không chứa principal.
+Shared report dùng selectedScopes cho declared scope; chỉ successful coverage mới thành output. Optional sourceObservations.before/after lưu observedAt/version/modifiedTime, không gọi Drive version là pinned revision. CSV transform metadata dùng policy=apostrophe_prefix_v1, totalTransformedCells và bySheet counts. Multi CSV ZIP chứa `manifest.json` report. XLSX dùng companion `<base>.metadata.json` (2 files, không thêm worksheet làm sai AC-01). Single CSV dùng UI summary và nút tải metadata riêng; CSV vẫn single `.csv` theo FR-09. Báo từng download status; không claim cả bộ complete nếu secondary download bị chặn. JSON tích hợp report fields tương ứng; source observations không chứa principal.
 
 ## H. Format rules
 
