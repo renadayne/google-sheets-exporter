@@ -76,6 +76,8 @@ Contracts được T08 freeze trước các adapter. Tên dưới đây là norm
 
 Ports: `AuthPort.signIn/getContext/getToken/signOut`; `PermissionPort.check(source,context,signal)`; `SheetsPort.getMetadata/readGrid(rect,signal)`; `WriterPort.begin/append/finalize/abort`; `DownloadPort.publish(artifact,signal)`; injected Clock/Random/Fetch for tests. `readGrid` requires controller-granted permitted context; actual token access stays network-side.
 
+T08b reviewed details: operational methods require AbortSignal; writer abort remains callable after cancellation. `SourceObservationPort.observe` supplies version/modifiedTime observations for consistency checks. WriterContext includes selected sheet metadata/order and forbids auth fields even on structurally assigned request variables. `WriterPort.finalize(report,signal)` receives metadata for the staged artifact; it does not authorize downloading. Download failures carry safe ErrorCode values. Error conversion rebuilds static catalog messages/classification even for mutated DomainError instances; policy denials cannot opt into retries.
+
 Domain freeze after T08a review: `src/contracts/domain.ts` is normative. Non-grid/unknown sheets may omit dimensions; validators must not invent zero bounds. `evidenceRevision` identifies local evidence/rule format, not an immutable Google ACL revision. Report metadata explicitly includes selected output format and visibility. Exclusions use compact zero-based half-open dimension intervals. Port/message contracts remain T08b/T08c work.
 
 ## E. Scope, coordinates và visibility
