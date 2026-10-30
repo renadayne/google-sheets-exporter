@@ -1,0 +1,26 @@
+{
+  "$comment": "MV3 Manifest template. In offline unconfigured builds, 'key' and 'oauth2' metadata are omitted entirely.",
+  "manifest_version": 3,
+  "name": "Google Sheets Exporter",
+  "version": "0.1.0",
+  "description": "Export Google Sheets workbooks offline with fidelity and privacy boundaries.",
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Google Sheets Exporter"
+  },
+  "permissions": [
+    "identity",
+    "activeTab",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://sheets.googleapis.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'self'; worker-src 'self'; connect-src 'self' https://sheets.googleapis.com https://www.googleapis.com;"
+  }
+}

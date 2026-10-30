@@ -1,6 +1,6 @@
 # Small-task backlog for implementation agents
 
-Status tất cả tasks: **TODO**. Chưa task implementation/spike nào được thực hiện. Mỗi heading là một đơn vị giao việc, không giao nguyên tài liệu cho một agent để làm hết. Dependencies nghĩa là predecessor đã review/pass, không chỉ đã có file.
+Đây là backlog gốc. Trạng thái thực hiện, kết quả review và commit hiện tại nằm ở [docs/task-status.md](docs/task-status.md). Mỗi heading là một đơn vị giao việc, không giao nguyên tài liệu cho một agent để làm hết. Dependencies nghĩa là predecessor đã review/pass trong phạm vi được phép, không chỉ đã có file; offline pass không thay thế live verification.
 
 ## Quy tắc và prompt giao việc
 
@@ -78,6 +78,8 @@ Commands sau T07: `npm run typecheck`, `npm test -- <test-file>`, `npm run build
 - Steps: discriminated unions, zero-based Rect, typed Cell/error, job generation, safe error codes, async port cancellation and writer lifecycle; error classes preserve retry reason without HTTP secrets.
 - Pass: typecheck + compile-time invalid-case fixtures; reviewer approves interface names/semantics. No any-shaped API payload crossing domain boundary.
 - Trace: FR-02/04/05/10/11, NFR-08, AC-03/08/14/15. Out: adapter implementation.
+
+Execution refinement for Flash: T08a defines domain types and negative type fixtures; T08b adds ports/errors against the reviewed domain; T08c adds sanitized worker-message contracts. Review/commit each substep separately. T08 is complete only when all three pass together; preserve the same parent scope and traceability.
 
 ### T09 — JSON/report schemas and valid examples (S)
 - Depends: T08. Read: A§G.

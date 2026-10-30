@@ -1,0 +1,23 @@
+{
+  "name": "google-sheets-exporter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.14.0",
+    "npm": "11.9.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --configLoader native",
+    "build": "vite build --configLoader native",
+    "test:e2e": "node tests/e2e/browser-smoke.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "playwright-core": "1.52.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}
