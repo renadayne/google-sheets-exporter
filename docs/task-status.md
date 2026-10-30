@@ -30,3 +30,5 @@ User is offline/asleep and requested avoiding new interactive approvals. Reuse a
 Next local work: T03 offline fixtures, T02/T05 offline evidence/setup templates, then foundation work. Live-only rows remain pending Google configuration independently of model quota availability.
 
 T03 offline fixtures were pushed as `ecc7318`. T05 offline setup/template is reviewed with corrections to extension-ID, cache/revocation and account-context claims; no live OAuth run is implied. Next: T02 offline matrix and T07 local foundation.
+
+T05 offline setup/template was pushed as `8ced583`. T02 offline matrix is accepted after correcting invented Drive restriction fields and error taxonomy: 24 synthetic cases; reviewer rerun 16/16 checks pass, including missing-trashed evidence and invalid-schema mutations. Live T02 remains pending; no production authorization gate is approved from synthetic evidence alone. Offline T07 foundation may proceed under the user's local-work instruction.

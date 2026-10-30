@@ -1,0 +1,571 @@
+{
+  "schemaVersion": "1.1.0",
+  "task": "T02",
+  "status": "OFFLINE_SYNTHETIC",
+  "liveVerified": false,
+  "description": "Corrected synthetic fixtures and candidate export-authorization decision oracle for offline T02 verification.",
+  "cases": [
+    {
+      "caseId": "case-01-owner-allowed",
+      "category": "allowed_candidates",
+      "description": "Owner candidate with verified same principal/source, canDownload true, and explicit false/false restrictions",
+      "requestSourceId": "sheet-001",
+      "boundPrincipalId": "principal-owner",
+      "tokenPrincipalId": "principal-owner",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-001",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "allowed",
+      "expectedReason": "Same verified principal and source, canDownload strictly true, and restrictedForReaders/restrictedForWriters both explicitly false.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-02-viewer-allowed",
+      "category": "allowed_candidates",
+      "description": "Viewer candidate without IRM, verified principal/source, canDownload true, explicit false/false restrictions",
+      "requestSourceId": "sheet-002",
+      "boundPrincipalId": "principal-viewer",
+      "tokenPrincipalId": "principal-viewer",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-002",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "allowed",
+      "expectedReason": "Same verified principal and source, canDownload strictly true, explicit false/false restrictions confirmed.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-03-editor-unrestricted-allowed",
+      "category": "allowed_candidates",
+      "description": "Editor candidate on unrestricted spreadsheet with verified principal/source and canDownload true",
+      "requestSourceId": "sheet-003",
+      "boundPrincipalId": "principal-editor",
+      "tokenPrincipalId": "principal-editor",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-003",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "allowed",
+      "expectedReason": "Same verified principal and source, canDownload strictly true, explicit false/false restrictions verified.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-04-viewer-irm-restricted",
+      "category": "reader_writer_irm",
+      "description": "Viewer accessing spreadsheet with reader restriction enabled (canDownload false)",
+      "requestSourceId": "sheet-004",
+      "boundPrincipalId": "principal-viewer",
+      "tokenPrincipalId": "principal-viewer",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-004",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": false },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": true,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": true,
+        "trashed": false
+      },
+      "expectedStatus": "restricted",
+      "expectedReason": "capabilities.canDownload is false and restrictedForReaders is true.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-05-editor-readers-irm-uncertain",
+      "category": "reader_writer_irm",
+      "description": "Editor candidate on spreadsheet with restrictedForReaders true but canDownload true; role-aware proof pending",
+      "requestSourceId": "sheet-005",
+      "boundPrincipalId": "principal-editor",
+      "tokenPrincipalId": "principal-editor",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-005",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": true,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": true,
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "restrictedForReaders is true while canDownload is true; under conservative role-unproven candidate, export is uncertain pending principal-aware proof.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2, Q06"
+    },
+    {
+      "caseId": "case-06-writer-irm-restricted",
+      "category": "reader_writer_irm",
+      "description": "Spreadsheet with writer restriction active, canDownload false",
+      "requestSourceId": "sheet-006",
+      "boundPrincipalId": "principal-editor",
+      "tokenPrincipalId": "principal-editor",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-006",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": false },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": true,
+            "restrictedForWriters": true
+          }
+        },
+        "copyRequiresWriterPermission": true,
+        "trashed": false
+      },
+      "expectedStatus": "restricted",
+      "expectedReason": "capabilities.canDownload is false and restrictedForWriters is true.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-07-dlp-context-denied",
+      "category": "dlp_shared_drive",
+      "description": "Enterprise Workspace DLP rule blocks export; origin recorded in scenario context outside driveResponse",
+      "scenarioContext": "enterprise_dlp_rule_enforced",
+      "requestSourceId": "sheet-007",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-007",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": false },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": true,
+            "restrictedForWriters": true
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "restricted",
+      "expectedReason": "capabilities.canDownload is false under enforced DLP context restrictions.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-08-shared-drive-denied",
+      "category": "dlp_shared_drive",
+      "description": "Shared Drive policy disables export; origin recorded in scenario context outside driveResponse",
+      "scenarioContext": "shared_drive_copy_restriction",
+      "requestSourceId": "sheet-008",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-008",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": false },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": true,
+            "restrictedForWriters": true
+          }
+        },
+        "copyRequiresWriterPermission": true,
+        "trashed": false
+      },
+      "expectedStatus": "restricted",
+      "expectedReason": "capabilities.canDownload is false under enforced Shared Drive restriction.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-09-missing-candownload-field",
+      "category": "missing_fields",
+      "description": "Drive response omits capabilities.canDownload field",
+      "requestSourceId": "sheet-009",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-009",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": {},
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "capabilities.canDownload field is omitted or non-boolean; cannot prove export permission.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-10-omitted-restriction-field",
+      "category": "missing_fields",
+      "description": "Drive response completely omits downloadRestrictions; omission semantics unverified offline",
+      "requestSourceId": "sheet-010",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-010",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "downloadRestrictions object is omitted; omission semantics unverified offline.",
+      "liveVerified": false,
+      "sourceDocRef": "S2"
+    },
+    {
+      "caseId": "case-11-missing-reader-flag",
+      "category": "missing_fields",
+      "description": "effectiveDownloadRestrictionWithContext omits restrictedForReaders boolean",
+      "requestSourceId": "sheet-011",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-011",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForWriters": false
+          }
+        },
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "restrictedForReaders is omitted; non-boolean/omitted flags evaluate to uncertain.",
+      "liveVerified": false,
+      "sourceDocRef": "S2"
+    },
+    {
+      "caseId": "case-12-nonboolean-writer-flag",
+      "category": "missing_fields",
+      "description": "effectiveDownloadRestrictionWithContext has null restrictedForWriters",
+      "requestSourceId": "sheet-012",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-012",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": null
+          }
+        },
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "restrictedForWriters is not a boolean; non-boolean values evaluate to uncertain.",
+      "liveVerified": false,
+      "sourceDocRef": "S2"
+    },
+    {
+      "caseId": "case-13-contradictory-legacy-irm",
+      "category": "contradictory_legacy",
+      "description": "Legacy copyRequiresWriterPermission is true while effective flags are false/false",
+      "requestSourceId": "sheet-013",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-013",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": true,
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "Contradiction between legacy copyRequiresWriterPermission=true and effective false/false flags.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S2"
+    },
+    {
+      "caseId": "case-14-principal-account-mismatch",
+      "category": "principal_source_binding",
+      "description": "Active OAuth token principal differs from bound job principal",
+      "requestSourceId": "sheet-014",
+      "boundPrincipalId": "principal-user-alpha",
+      "tokenPrincipalId": "principal-user-beta",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-014",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "Token principal mismatch with bound job identity; fail closed.",
+      "liveVerified": false,
+      "sourceDocRef": "S10"
+    },
+    {
+      "caseId": "case-15-source-id-mismatch",
+      "category": "principal_source_binding",
+      "description": "Requested spreadsheet ID does not match Drive response ID",
+      "requestSourceId": "sheet-expected",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-unexpected",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "uncertain",
+      "expectedReason": "Response spreadsheet ID does not match requested source ID.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S3"
+    },
+    {
+      "caseId": "case-16-admin-oauth-denial",
+      "category": "admin_oauth_denial",
+      "description": "Explicit admin OAuth restriction / Workspace policy block (HTTP 403 admin_policy_enforced)",
+      "requestSourceId": "sheet-016",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 403,
+      "apiErrorReason": "admin_policy_enforced",
+      "driveResponse": null,
+      "expectedStatus": "admin_approval_required",
+      "expectedReason": "Explicit admin OAuth policy block requires admin approval; classified as admin_approval_required, not policy restriction.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S12"
+    },
+    {
+      "caseId": "case-17-ratelimit-403-retry",
+      "category": "error_taxonomy",
+      "description": "HTTP 403 with rateLimitExceeded reason classified as bounded retry candidate, not policy denial",
+      "requestSourceId": "sheet-017",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 403,
+      "apiErrorReason": "rateLimitExceeded",
+      "driveResponse": null,
+      "expectedStatus": "retry_candidate",
+      "expectedReason": "Identified rate limit quota error; candidate for bounded retry, not a permanent authorization denial.",
+      "liveVerified": false,
+      "sourceDocRef": "S7"
+    },
+    {
+      "caseId": "case-18-unknown-403-uncertain",
+      "category": "error_taxonomy",
+      "description": "HTTP 403 with unspecified or unknown reason; cannot distinguish quota from permission",
+      "requestSourceId": "sheet-018",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 403,
+      "apiErrorReason": null,
+      "driveResponse": null,
+      "expectedStatus": "uncertain",
+      "expectedReason": "Unknown 403 error without diagnostic reason; fail closed as uncertain without retry or fallback.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S7"
+    },
+    {
+      "caseId": "case-19-missing-inaccessible-404",
+      "category": "error_taxonomy",
+      "description": "HTTP 404 notFound classified as missing_or_inaccessible without inferring file existence",
+      "requestSourceId": "sheet-019",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 404,
+      "apiErrorReason": "notFound",
+      "driveResponse": null,
+      "expectedStatus": "missing_or_inaccessible",
+      "expectedReason": "HTTP 404 resource not found or inaccessible; does not infer existence or attempt alternate path.",
+      "liveVerified": false,
+      "sourceDocRef": "S1"
+    },
+    {
+      "caseId": "case-20-trashed-workbook-inaccessible",
+      "category": "error_taxonomy",
+      "description": "Spreadsheet metadata returned with trashed true; classified as missing_or_inaccessible",
+      "requestSourceId": "sheet-020",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "sheet-020",
+        "mimeType": "application/vnd.google-apps.spreadsheet",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": true
+      },
+      "expectedStatus": "missing_or_inaccessible",
+      "expectedReason": "Spreadsheet is trashed; classified as missing_or_inaccessible / unsupported source, not a policy restriction.",
+      "liveVerified": false,
+      "sourceDocRef": "S1"
+    },
+    {
+      "caseId": "case-21-generic-401-auth-renewal",
+      "category": "revocation_lifecycle",
+      "description": "Generic HTTP 401 without confirmed revocation allows single bounded auth renewal",
+      "requestSourceId": "sheet-021",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 401,
+      "apiErrorReason": null,
+      "authRenewalAttempts": 0,
+      "isConfirmedRevocation": false,
+      "driveResponse": null,
+      "expectedStatus": "auth_renewal_candidate",
+      "expectedReason": "Generic HTTP 401 may indicate token expiry; eligible for single bounded auth renewal plus fresh permission check.",
+      "liveVerified": false,
+      "sourceDocRef": "S9, S10"
+    },
+    {
+      "caseId": "case-22-exhausted-401-login-required",
+      "category": "revocation_lifecycle",
+      "description": "HTTP 401 after auth renewal already attempted requires user login",
+      "requestSourceId": "sheet-022",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 401,
+      "apiErrorReason": null,
+      "authRenewalAttempts": 1,
+      "isConfirmedRevocation": false,
+      "driveResponse": null,
+      "expectedStatus": "login_required",
+      "expectedReason": "HTTP 401 persists after renewal attempt; terminal authentication failure requires interactive sign-in.",
+      "liveVerified": false,
+      "sourceDocRef": "S9, S10"
+    },
+    {
+      "caseId": "case-23-confirmed-revocation-terminal",
+      "category": "revocation_lifecycle",
+      "description": "Confirmed token revocation via explicit independent synthetic evidence; immediate termination and buffer wipe",
+      "requestSourceId": "sheet-023",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 401,
+      "apiErrorReason": "authRevoked",
+      "authRenewalAttempts": 0,
+      "isConfirmedRevocation": true,
+      "syntheticRevocationEvidence": "account_permissions_revoked",
+      "driveResponse": null,
+      "expectedStatus": "revoked",
+      "expectedReason": "Confirmed token revocation via separate explicit evidence triggers job abort and buffer wipe with zero artifact download.",
+      "liveVerified": false,
+      "sourceDocRef": "S9, S10"
+    },
+    {
+      "caseId": "case-24-non-spreadsheet-unsupported",
+      "category": "error_taxonomy",
+      "description": "Resource mimeType is not Google Sheets; classified as missing_or_inaccessible unsupported source",
+      "requestSourceId": "doc-024",
+      "boundPrincipalId": "principal-user",
+      "tokenPrincipalId": "principal-user",
+      "httpStatus": 200,
+      "apiErrorReason": null,
+      "driveResponse": {
+        "id": "doc-024",
+        "mimeType": "application/vnd.google-apps.document",
+        "capabilities": { "canDownload": true },
+        "downloadRestrictions": {
+          "effectiveDownloadRestrictionWithContext": {
+            "restrictedForReaders": false,
+            "restrictedForWriters": false
+          }
+        },
+        "copyRequiresWriterPermission": false,
+        "trashed": false
+      },
+      "expectedStatus": "missing_or_inaccessible",
+      "expectedReason": "Resource is not a Google spreadsheet; classified as missing_or_inaccessible / unsupported source.",
+      "liveVerified": false,
+      "sourceDocRef": "S1, S3"
+    }
+  ]
+}
