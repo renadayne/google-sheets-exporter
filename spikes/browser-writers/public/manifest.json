@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Google Sheets Exporter - T04 Browser Writer Spike",
+  "version": "0.0.1",
+  "description": "Isolated MV3 spike harness for ExcelJS and fflate in an extension page and dedicated Web Worker.",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open T04 Spike"
+  },
+  "permissions": [
+    "downloads"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self';"
+  }
+}

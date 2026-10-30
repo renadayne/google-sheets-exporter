@@ -1,0 +1,23 @@
+{
+  "name": "gsheets-exporter-spike-browser-writers",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build --configLoader native",
+    "spike:node": "node scripts/run-node-spike.mjs",
+    "spike:chrome": "node scripts/run-chrome-spike.mjs",
+    "spike:all": "npm run build && npm run spike:node && npm run spike:chrome"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0",
+    "fflate": "0.8.2"
+  },
+  "devDependencies": {
+    "csv-parse": "5.6.0",
+    "fast-xml-parser": "5.2.5",
+    "playwright-core": "1.52.0",
+    "vite": "6.2.6",
+    "xlsx": "0.18.5"
+  }
+}
