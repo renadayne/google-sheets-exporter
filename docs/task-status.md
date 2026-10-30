@@ -28,3 +28,5 @@ T03 offline fixtures are accepted after review/correction job `f724ae2a-be45-42c
 User is offline/asleep and requested avoiding new interactive approvals. Reuse already granted execution permissions where available; if an action requires a fresh approval, record it pending and continue independent runnable work.
 
 Next local work: T03 offline fixtures, T02/T05 offline evidence/setup templates, then foundation work. Live-only rows remain pending Google configuration independently of model quota availability.
+
+T03 offline fixtures were pushed as `ecc7318`. T05 offline setup/template is reviewed with corrections to extension-ID, cache/revocation and account-context claims; no live OAuth run is implied. Next: T02 offline matrix and T07 local foundation.

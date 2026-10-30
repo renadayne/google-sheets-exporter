@@ -1,0 +1,21 @@
+{
+  "$comment": "Public configuration template. Never store client secrets or tokens here. Leave null for offline builds.",
+  "oauth2": {
+    "clientId": null,
+    "manifestPublicKey": null,
+    "scopes": [
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  },
+  "endpoints": {
+    "sheetsApiBase": "https://sheets.googleapis.com/v4/spreadsheets",
+    "driveApiBase": "https://www.googleapis.com/drive/v3/files",
+    "userInfoEndpoint": "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  "offlineBuild": {
+    "omitOAuthMetadataWhenUnconfigured": true,
+    "unconfiguredErrorCode": "CONFIG_REQUIRED"
+  }
+}
