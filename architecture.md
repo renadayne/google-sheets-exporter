@@ -68,7 +68,7 @@ Contracts được T08 freeze trước các adapter. Tên dưới đây là norm
 | WorkbookMeta | id/title/locale/timeZone; ordered sheets{id,title,index,type,hidden,rows,columns}; source version observation |
 | Rect | sheetId,r0,c0,r1,c1; zero-based half-open; valid positive area within grid |
 | ExportRequest | sourceId, principalKey, ordered sheetIds, one Rect per sheet, mode, format, visibility, limitsVersion; immutable after start |
-| Cell | r,c absolute zero-based; kind string/number/boolean/error; value; optional formulaText, numberFormatType; never JS Date or executable formula object |
+| Cell | r,c absolute zero-based; kind string/number/boolean/error; value; optional formulaText only on string cells, numberFormatType; never JS Date or executable formula object |
 | NormalizedChunk | jobId, chunkId, Rect, sorted sparse cells, excluded dimension intervals, bytes; absence != unknown coverage |
 | CoverageLedger | deterministic planned leaf rectangles, completed IDs; failed/retried/child split records; complete iff exact selected coverage incl. intentional exclusions |
 | Artifact | bytes/Blob, MIME, filename, safe summary; kept private before final gate |

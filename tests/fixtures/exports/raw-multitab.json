@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "id": "synthetic-fidelity-spreadsheet-001",
+    "title": "Synthetic Multi-Tab Fidelity",
+    "locale": "en_US",
+    "timeZone": "America/New_York"
+  },
+  "export": {
+    "startedAt": "2026-10-31T01:00:00.000Z",
+    "producedAt": "2026-10-31T01:00:03.500Z",
+    "mode": "raw",
+    "format": "json",
+    "visibility": "include_all",
+    "complete": true,
+    "consistency": "not_atomic_no_change_detected",
+    "warnings": []
+  },
+  "selectedScopes": [
+    {
+      "sheetId": 0,
+      "rect": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 90000,
+        "c1": 26
+      }
+    },
+    {
+      "sheetId": 1,
+      "rect": {
+        "sheetId": 1,
+        "r0": 0,
+        "c0": 0,
+        "r1": 1000,
+        "c1": 26
+      }
+    }
+  ],
+  "sheetOrder": [0, 1],
+  "limitsVersion": "1.0",
+  "nameMappings": [
+    {
+      "sheetId": 0,
+      "originalTitle": "SparseTab",
+      "exportedName": "SparseTab"
+    },
+    {
+      "sheetId": 1,
+      "originalTitle": "EmptyTab",
+      "exportedName": "EmptyTab"
+    }
+  ],
+  "exclusions": [
+    {
+      "sheetId": 0,
+      "excludedRows": [],
+      "excludedColumns": []
+    },
+    {
+      "sheetId": 1,
+      "excludedRows": [],
+      "excludedColumns": []
+    }
+  ],
+  "sourceObservations": {
+    "before": {
+      "observedAt": "2026-10-31T00:59:59.000Z",
+      "version": "12345",
+      "modifiedTime": "2026-10-30T23:50:00.000Z"
+    },
+    "after": {
+      "observedAt": "2026-10-31T01:00:04.000Z",
+      "version": "12345",
+      "modifiedTime": "2026-10-30T23:50:00.000Z"
+    }
+  },
+  "sheets": [
+    {
+      "id": 0,
+      "title": "SparseTab",
+      "index": 0,
+      "scope": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 90000,
+        "c1": 26
+      },
+      "visibility": {
+        "mode": "include_all",
+        "excludedRows": [],
+        "excludedColumns": []
+      },
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "kind": "string",
+          "value": "A1 Header"
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "kind": "number",
+          "value": 45678.5,
+          "numberFormatType": "DATE_TIME"
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "kind": "error",
+          "value": {
+            "code": "#DIV/0!",
+            "message": "Evaluation error"
+          }
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "kind": "string",
+          "value": ""
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "kind": "string",
+          "value": "=SUM(A1:B10)"
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "kind": "string",
+          "value": "ya29.sample-token-like-content"
+        },
+        {
+          "r": 10,
+          "c": 0,
+          "kind": "number",
+          "value": 1234.56
+        },
+        {
+          "r": 11,
+          "c": 0,
+          "kind": "boolean",
+          "value": false
+        },
+        {
+          "r": 49,
+          "c": 3,
+          "kind": "number",
+          "value": 42.5
+        },
+        {
+          "r": 89999,
+          "c": 25,
+          "kind": "boolean",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "title": "EmptyTab",
+      "index": 1,
+      "scope": {
+        "sheetId": 1,
+        "r0": 0,
+        "c0": 0,
+        "r1": 1000,
+        "c1": 26
+      },
+      "visibility": {
+        "mode": "include_all",
+        "excludedRows": [],
+        "excludedColumns": []
+      },
+      "cells": []
+    }
+  ]
+}

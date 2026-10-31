@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "id": "synthetic-formula-doc-003",
+    "title": "Formula Text And Mixed Values",
+    "locale": "en_US",
+    "timeZone": "UTC"
+  },
+  "export": {
+    "startedAt": "2026-10-31T03:00:00.000Z",
+    "producedAt": "2026-10-31T03:00:02.100Z",
+    "mode": "formula_text",
+    "format": "json",
+    "visibility": "include_all",
+    "complete": true,
+    "consistency": "not_atomic_unverified",
+    "warnings": []
+  },
+  "selectedScopes": [
+    {
+      "sheetId": 0,
+      "rect": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 100,
+        "c1": 10
+      }
+    }
+  ],
+  "sheetOrder": [0],
+  "limitsVersion": "1.0",
+  "nameMappings": [
+    {
+      "sheetId": 0,
+      "originalTitle": "CalcTab",
+      "exportedName": "CalcTab"
+    }
+  ],
+  "exclusions": [
+    {
+      "sheetId": 0,
+      "excludedRows": [],
+      "excludedColumns": []
+    }
+  ],
+  "sheets": [
+    {
+      "id": 0,
+      "title": "CalcTab",
+      "index": 0,
+      "scope": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 100,
+        "c1": 10
+      },
+      "visibility": {
+        "mode": "include_all",
+        "excludedRows": [],
+        "excludedColumns": []
+      },
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "kind": "string",
+          "value": "=SUM(B1:B10)",
+          "formulaText": "=SUM(B1:B10)"
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "kind": "string",
+          "value": "=SUM(1, 2, 3)",
+          "formulaText": "=SUM(1, 2, 3)"
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "kind": "number",
+          "value": 3.14159
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "kind": "boolean",
+          "value": true
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "kind": "string",
+          "value": "Plain label"
+        },
+        {
+          "r": 5,
+          "c": 0,
+          "kind": "error",
+          "value": {
+            "code": "#N/A",
+            "message": "Not available"
+          }
+        },
+        {
+          "r": 6,
+          "c": 0,
+          "kind": "number",
+          "value": 45678,
+          "numberFormatType": "DATE"
+        }
+      ]
+    }
+  ]
+}

@@ -122,6 +122,9 @@ function negativeDomainFixture(validReport: ExportReport): void {
     // @ts-expect-error Cell discriminated union rejects Date value
     const _dateInCellUnion: Cell = { r: 0, c: 0, kind: 'string', value: new Date() };
 
+    // @ts-expect-error Formula expressions belong only to inert string cells
+    const _computedFormulaCell: NumberCell = { r: 0, c: 0, kind: 'number', value: 55, formulaText: '=SUM(A1:A3)' };
+
     // 3. Missing permitted binding
     // @ts-expect-error PermittedEligibility MUST have sourceId
     const _missingSourceId: PermittedEligibility = {
@@ -167,7 +170,7 @@ function negativeDomainFixture(validReport: ExportReport): void {
     const _credentialArtifact: Artifact = { filename: 'export.csv', mimeType: 'text/csv', data: new Uint8Array(), byteLength: 0, safeSummary: '1 tab exported', bearerToken: 'synthetic-test-only' };
 
     void [_wrongScalarString, _wrongScalarNumber, _wrongScalarBool, _wrongErrorShape,
-      _missingErrorMessage, _dateAsNumberValue, _dateInCellUnion, _missingSourceId,
+      _missingErrorMessage, _dateAsNumberValue, _dateInCellUnion, _computedFormulaCell, _missingSourceId,
       _missingPrincipalKey, _missingCheckedAt, _missingRevision, _credentialReport, _credentialArtifact];
 }
 

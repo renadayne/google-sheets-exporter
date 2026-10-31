@@ -141,7 +141,6 @@ export interface NumberCell {
   readonly c: number;
   readonly kind: 'number';
   readonly value: number;
-  readonly formulaText?: string;
   readonly numberFormatType?: string;
 }
 
@@ -150,7 +149,6 @@ export interface BooleanCell {
   readonly c: number;
   readonly kind: 'boolean';
   readonly value: boolean;
-  readonly formulaText?: string;
   readonly numberFormatType?: string;
 }
 
@@ -159,7 +157,6 @@ export interface ErrorCell {
   readonly c: number;
   readonly kind: 'error';
   readonly value: CellErrorValue;
-  readonly formulaText?: string;
   readonly numberFormatType?: string;
 }
 

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "id": "synthetic-csv-report-004",
+    "title": "CSV Multi-Tab Export",
+    "locale": "en_US",
+    "timeZone": "UTC"
+  },
+  "export": {
+    "startedAt": "2026-10-31T04:00:00.000Z",
+    "producedAt": "2026-10-31T04:00:01.500Z",
+    "mode": "raw",
+    "format": "csv",
+    "visibility": "include_all",
+    "complete": true,
+    "consistency": "not_atomic_no_change_detected",
+    "warnings": [
+      {
+        "code": "CSV_FORMULA_PREFIXED",
+        "message": "Two source text cells were prefixed with an apostrophe for spreadsheet-open safety; JSON preserves exact values.",
+        "sheetId": 0
+      }
+    ]
+  },
+  "selectedScopes": [
+    {
+      "sheetId": 0,
+      "rect": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 50,
+        "c1": 5
+      }
+    }
+  ],
+  "sheetOrder": [0],
+  "limitsVersion": "1.0",
+  "nameMappings": [
+    {
+      "sheetId": 0,
+      "originalTitle": "Sheet1",
+      "exportedName": "Sheet1.csv"
+    }
+  ],
+  "exclusions": [
+    {
+      "sheetId": 0,
+      "excludedRows": [],
+      "excludedColumns": []
+    }
+  ],
+  "sourceObservations": {
+    "before": {
+      "observedAt": "2026-10-31T03:59:59.000Z",
+      "version": "987",
+      "modifiedTime": "2026-10-31T03:50:00.000Z"
+    },
+    "after": {
+      "observedAt": "2026-10-31T04:00:02.000Z",
+      "version": "987",
+      "modifiedTime": "2026-10-31T03:50:00.000Z"
+    }
+  },
+  "csvTransformCounts": {
+    "policy": "apostrophe_prefix_v1",
+    "totalTransformedCells": 2,
+    "bySheet": [
+      {
+        "sheetId": 0,
+        "transformedCells": 2
+      }
+    ]
+  }
+}

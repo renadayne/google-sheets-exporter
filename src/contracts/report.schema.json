@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:google-sheets-exporter:report.schema.json",
+  "title": "ExportReport",
+  "description": "Metadata-only execution report for Google Sheets exports (Architecture G / domain.ts).",
+  "type": "object",
+  "allOf": [
+    { "$ref": "#/$defs/baseReport" }
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "sourceMeta": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string" },
+        "locale": { "type": "string" },
+        "timeZone": { "type": "string" }
+      },
+      "required": ["id", "title", "locale", "timeZone"],
+      "additionalProperties": false
+    },
+    "reportWarning": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" },
+        "sheetId": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["code", "message"],
+      "additionalProperties": false
+    },
+    "exportMeta": {
+      "type": "object",
+      "properties": {
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "producedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "mode": {
+          "enum": ["formatted", "raw", "formula_text"]
+        },
+        "format": {
+          "enum": ["xlsx", "csv", "json"]
+        },
+        "visibility": {
+          "enum": ["include_all", "api_visible"]
+        },
+        "complete": { "type": "boolean" },
+        "consistency": {
+          "enum": [
+            "not_atomic_no_change_detected",
+            "not_atomic_changes_detected",
+            "not_atomic_unverified"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reportWarning" }
+        }
+      },
+      "required": [
+        "startedAt",
+        "producedAt",
+        "mode",
+        "format",
+        "visibility",
+        "complete",
+        "consistency",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "rect": {
+      "type": "object",
+      "properties": {
+        "sheetId": { "type": "integer", "minimum": 0 },
+        "r0": { "type": "integer", "minimum": 0 },
+        "c0": { "type": "integer", "minimum": 0 },
+        "r1": { "type": "integer", "minimum": 1 },
+        "c1": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["sheetId", "r0", "c0", "r1", "c1"],
+      "additionalProperties": false
+    },
+    "exportScope": {
+      "type": "object",
+      "properties": {
+        "sheetId": { "type": "integer", "minimum": 0 },
+        "rect": { "$ref": "#/$defs/rect" }
+      },
+      "required": ["sheetId", "rect"],
+      "additionalProperties": false
+    },
+    "dimensionInterval": {
+      "type": "object",
+      "properties": {
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["start", "end"],
+      "additionalProperties": false
+    },
+    "sheetNameMapping": {
+      "type": "object",
+      "properties": {
+        "sheetId": { "type": "integer", "minimum": 0 },
+        "originalTitle": { "type": "string" },
+        "exportedName": { "type": "string" }
+      },
+      "required": ["sheetId", "originalTitle", "exportedName"],
+      "additionalProperties": false
+    },
+    "sheetExclusions": {
+      "type": "object",
+      "properties": {
+        "sheetId": { "type": "integer", "minimum": 0 },
+        "excludedRows": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionInterval" }
+        },
+        "excludedColumns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dimensionInterval" }
+        }
+      },
+      "required": ["sheetId", "excludedRows", "excludedColumns"],
+      "additionalProperties": false
+    },
+    "sourceObservation": {
+      "type": "object",
+      "properties": {
+        "observedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+        },
+        "version": { "type": "string" },
+        "modifiedTime": { "type": "string", "format": "date-time" }
+      },
+      "required": ["observedAt"],
+      "additionalProperties": false
+    },
+    "reportSourceObservations": {
+      "type": "object",
+      "properties": {
+        "before": { "$ref": "#/$defs/sourceObservation" },
+        "after": { "$ref": "#/$defs/sourceObservation" }
+      },
+      "additionalProperties": false
+    },
+    "reportCsvTransforms": {
+      "type": "object",
+      "properties": {
+        "policy": { "const": "apostrophe_prefix_v1" },
+        "totalTransformedCells": { "type": "integer", "minimum": 0 },
+        "bySheet": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sheetId": { "type": "integer", "minimum": 0 },
+              "transformedCells": { "type": "integer", "minimum": 0 }
+            },
+            "required": ["sheetId", "transformedCells"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["policy", "totalTransformedCells", "bySheet"],
+      "additionalProperties": false
+    },
+    "baseReport": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": { "const": "1.0" },
+        "source": { "$ref": "#/$defs/sourceMeta" },
+        "export": { "$ref": "#/$defs/exportMeta" },
+        "selectedScopes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/exportScope" }
+        },
+        "sheetOrder": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "limitsVersion": { "type": "string", "minLength": 1 },
+        "nameMappings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sheetNameMapping" }
+        },
+        "exclusions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sheetExclusions" }
+        },
+        "sourceObservations": { "$ref": "#/$defs/reportSourceObservations" },
+        "csvTransformCounts": { "$ref": "#/$defs/reportCsvTransforms" }
+      },
+      "required": [
+        "schemaVersion",
+        "source",
+        "export",
+        "selectedScopes",
+        "sheetOrder",
+        "limitsVersion",
+        "nameMappings",
+        "exclusions"
+      ]
+    }
+  }
+}

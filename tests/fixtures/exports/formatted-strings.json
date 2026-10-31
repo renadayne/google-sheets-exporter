@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "id": "synthetic-formatted-doc-002",
+    "title": "Formatted Strings Export",
+    "locale": "en_US",
+    "timeZone": "UTC"
+  },
+  "export": {
+    "startedAt": "2026-10-31T02:00:00.000Z",
+    "producedAt": "2026-10-31T02:00:01.200Z",
+    "mode": "formatted",
+    "format": "json",
+    "visibility": "api_visible",
+    "complete": true,
+    "consistency": "not_atomic_no_change_detected",
+    "warnings": []
+  },
+  "selectedScopes": [
+    {
+      "sheetId": 0,
+      "rect": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 90000,
+        "c1": 26
+      }
+    }
+  ],
+  "sheetOrder": [0],
+  "limitsVersion": "1.0",
+  "nameMappings": [
+    {
+      "sheetId": 0,
+      "originalTitle": "Summary",
+      "exportedName": "Summary"
+    }
+  ],
+  "exclusions": [
+    {
+      "sheetId": 0,
+      "excludedRows": [
+        {
+          "start": 10,
+          "end": 20
+        }
+      ],
+      "excludedColumns": []
+    }
+  ],
+  "sheets": [
+    {
+      "id": 0,
+      "title": "Summary",
+      "index": 0,
+      "scope": {
+        "sheetId": 0,
+        "r0": 0,
+        "c0": 0,
+        "r1": 90000,
+        "c1": 26
+      },
+      "visibility": {
+        "mode": "api_visible",
+        "excludedRows": [
+          {
+            "start": 10,
+            "end": 20
+          }
+        ],
+        "excludedColumns": []
+      },
+      "cells": [
+        {
+          "r": 0,
+          "c": 0,
+          "kind": "string",
+          "value": "A1 Header"
+        },
+        {
+          "r": 1,
+          "c": 0,
+          "kind": "string",
+          "value": "2026-10-31 02:00:00"
+        },
+        {
+          "r": 2,
+          "c": 0,
+          "kind": "string",
+          "value": "#DIV/0!"
+        },
+        {
+          "r": 3,
+          "c": 0,
+          "kind": "string",
+          "value": ""
+        },
+        {
+          "r": 4,
+          "c": 0,
+          "kind": "string",
+          "value": "=SUM(A1:B10)"
+        },
+        {
+          "r": 49,
+          "c": 3,
+          "kind": "string",
+          "value": "$42.50"
+        },
+        {
+          "r": 89999,
+          "c": 25,
+          "kind": "string",
+          "value": "TRUE"
+        }
+      ]
+    }
+  ]
+}
