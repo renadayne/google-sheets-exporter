@@ -11,6 +11,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --configLoader native",
     "build": "vite build --configLoader native",
+    "prebuild": "npm run schemas:check",
+    "schemas:generate": "node scripts/generate-validators.mjs",
+    "schemas:check": "node scripts/generate-validators.mjs --check",
     "test:e2e": "node tests/e2e/browser-smoke.mjs"
   },
   "devDependencies": {

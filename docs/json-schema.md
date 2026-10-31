@@ -12,9 +12,11 @@ Normative schemas for export documents and metadata reports conforming to Archit
 
 ## 2. Dev-Only Tooling & MV3 CSP Constraint
 
-- `ajv` (v8) and `ajv-formats` (v3) are development-only dependencies for Node tests and CI verification.
-- **MV3 CSP Caveat**: Ajv compiles schemas at runtime using `Function()`, which is prohibited under Chrome Extension Manifest V3 CSP (`script-src 'self'`). Never import Ajv into runtime code (`src/runtime/`, `src/source/`, `src/jobs/`, `src/export/`).
-- Runtime boundaries must use reviewed static type guards, precompiled standalone validators, or explicit structural checks.
+- `ajv` (v8) and `ajv-formats` (v3) are development-only dependencies for Node tests, CI verification, and build-time validator generation.
+- **MV3 CSP Caveat**: Ajv compiles schemas at runtime using `Function()`, which is prohibited under Chrome Extension Manifest V3 CSP (`script-src 'self'`). Never import the Ajv compiler into runtime code (`src/runtime/`, `src/source/`, `src/jobs/`, `src/export/`).
+- **Precompiled Standalone Validators (T24a)**: Build-time generation (`scripts/generate-validators.mjs`) uses `ajv/dist/standalone` and Vite to bundle standalone validation logic and pure runtime helpers (`ucs2length`, `equal`, date-time format) into a single self-contained ES2022 ESM artifact (`src/contracts/generated/validators.js`). This bundle has zero external imports and contains no dynamic code generation (`Function`/`eval`).
+- Runtime boundaries consume these precompiled validators exclusively through the safe wrapper `src/contracts/validation.ts` (`isExportReport`, `isJsonExportDocument`), which suppresses internal error state and safely handles hostile property getters.
+- Runtime generation uses first-error validation to bound diagnostic allocation; development parity checks may collect all errors. Both enforce the same schema. The generated banner includes actual compiler/bundler versions, schema/settings hash and complete bundled helper licenses. `npm run schemas:check` detects drift before app builds.
 
 ## 3. Cell Representation and Mode Projections
 
