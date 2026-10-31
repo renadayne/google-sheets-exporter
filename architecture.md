@@ -120,6 +120,8 @@ Errors giữ `kind:error`, code/message nguồn đã sanitize; JSON tagged error
 
 Cells sorted r,c; unique coordinates within scope; nonfinite numbers reject; error cells use value `{code,message}`. JSON Schema draft 2020-12 ở `src/contracts/export.schema.json` sẽ được tạo T09, additionalProperties=false tại boundaries; future incompatible change tăng major. Warnings là `{code,message,sheetId?}`, không raw HTTP bodies.
 
+Schema validation tooling is development-only. Ajv's schema compiler uses dynamic code generation, so it must not be imported into the MV3 runtime. Use it in Node tests; any future generic runtime validator must use reviewed precompiled standalone code or a CSP-compatible explicit validator. Draft 2020-12 compositions may use unevaluatedProperties=false at the final boundary instead of incorrectly closing a reusable base before extension.
+
 Shared report dùng selectedScopes cho declared scope; chỉ successful coverage mới thành output. Optional sourceObservations.before/after lưu observedAt/version/modifiedTime, không gọi Drive version là pinned revision. CSV transform metadata dùng policy=apostrophe_prefix_v1, totalTransformedCells và bySheet counts. Multi CSV ZIP chứa `manifest.json` report. XLSX dùng companion `<base>.metadata.json` (2 files, không thêm worksheet làm sai AC-01). Single CSV dùng UI summary và nút tải metadata riêng; CSV vẫn single `.csv` theo FR-09. Báo từng download status; không claim cả bộ complete nếu secondary download bị chặn. JSON tích hợp report fields tương ứng; source observations không chứa principal.
 
 ## H. Format rules
