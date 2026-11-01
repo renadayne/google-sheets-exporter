@@ -30,8 +30,12 @@ export function buildJsonExportDocument(
   let capturedOptions: BuildCompleteExportReportOptions;
   try {
     if (!options || typeof options !== 'object' || Array.isArray(options)) throw new DomainError('CONFIG_INVALID');
-    const { maxWarnings, signal } = options;
-    capturedOptions = { maxWarnings, signal };
+    const { maxWarnings, signal, csvTransformCounts } = options;
+    capturedOptions = {
+      maxWarnings,
+      signal,
+      ...(csvTransformCounts !== undefined ? { csvTransformCounts } : {})
+    };
   } catch {
     throw new DomainError('CONFIG_INVALID');
   }

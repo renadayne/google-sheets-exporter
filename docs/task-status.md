@@ -41,11 +41,12 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T24c exact string byte count / frozen JSON encoding | `32b47ab` / `b9e5a89` |
 | T24c context / chunk snapshots | `ada7129` / `f5b2f0a` |
 | T24c JSON WriterPort lifecycle/private artifacts | `b53fc2e`; generation/phase fences and aggregate budgets |
-| T24b3a common metadata report extraction | `2015c98`; currently JSON-only; wrapper captures options once |
+| T24b3a common metadata report extraction | `2015c98`; wrapper captures options once; expanded for CSV/XLSX by T27b |
 | T25 names / companion metadata names | `a3f356d` / `c61c516` |
 | T26 CSV rectangle encoder | `8c1f0d9`; quote-all/BOM/CRLF, formula prefix policy, exact relative rectangle |
 | T27a CSV sheet batch | `0dc3c6a`; aggregate bytes and actual per-sheet transform counts |
-| T28a XLSX primitive | Reviewed after job `489c762d-ebdc-46c5-a256-807869d2b84a`; scalar-only workbook, OOXML text fidelity, safe cancellation/errors; packaging pending |
+| T28a XLSX primitive | `adce308`; scalar-only workbook, OOXML text fidelity, safe cancellation/errors; packaging pending |
+| T27b common CSV/XLSX report binding | Reviewed job `9bdc820e-5e86-4810-becb-dc8b5791ec0c`; actual encoder counts and controlled CSV warning |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
 Latest integration checkpoint after T28a and report extraction: strict typecheck, **682/682 tests across 38 files**, schema check and scaffold production build PASS. Schema hash prefix `7c4143a7d76f9252`. New writer modules are not wired into the runtime/UI, so this build is not browser writer evidence.
@@ -53,7 +54,8 @@ Latest integration checkpoint after T28a and report extraction: strict typecheck
 ## In progress / next boundaries
 
 - **T28a accepted offline** after two correction rounds: source-order scalar assignments, original coordinates, representability preflight, literal OOXML escape protection and exact CR wire text, guarded provider errors, listener cleanup/cancellation. Lead added transient post-registration getter failure regression; isolated/main strict typecheck and 26 targeted tests PASS. Names now sanitize escaped-looking worksheet patterns before collision/truncation while preserving originalTitle. See handoff and dependency evidence. No WriterPort/companion/UI or desktop compatibility claim.
-- **T27b shared CSV/XLSX report binding**, isolated `.local/worktrees/t27b`: job `9bdc820e-5e86-4810-becb-dc8b5791ec0c`. Adds format/name binding and actual CSV encoder counts with a controlled safety warning; no packaging/downloads.
+- **T27b accepted offline**: format/name/scopes/source consistency bound for all three formats; CSV requires actual encoder facts, validates count bounds/order/sum and binds optional report counts, emits one controlled safety warning when needed. Lead strengthened real-encoder zero/mutation fixtures and malformed order/ID cases, and added count-loop cancellation polling. Main strict typecheck +44 report/document/writer tests PASS. No packaging/download authority.
+- **T27c1 ZIP transport primitive**, isolated `.local/worktrees/t27c1`: job `c71a77d6-6fb6-4cf7-8e27-a6aefa7ba622`. Byte-preserving CSV entries plus manifest, preflight aggregate and output caps; independent ZIP reader required. Review only after terminal.
 - Next after those reviews: CSV ZIP/manifest/single-tab metadata packaging; XLSX companion report; bounded WriterPort lifecycle; worker bridge/controller/download integration. Do not mark parent T27/T29 complete prematurely.
 - Production Google adapters/gates, UI composition, lifecycle/privacy audit, benchmarks and release gates remain pending. Offline pure work may continue with reviewed ports; missing prerequisites never authorize a weaker permission gate.
 

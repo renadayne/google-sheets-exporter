@@ -1,5 +1,5 @@
 /**
- * T24b3a Common Complete Metadata Report Validation and Copy
+ * T27b Common Complete Metadata Report Validation and Copy
  * Precondition: `context` must be a validated frozen snapshot (e.g. from `snapshotWriterContext`)
  * and `prepared` must be real `prepareWriterData` result for the SAME `context`.
  * Still enforces defensive validation and semantic relations across context, prepared sheets,
@@ -9,12 +9,14 @@
 
 import type {
   ExportReport, DimensionInterval, SheetExclusions, ReportWarning,
-  ReportSourceObservations, SourceObservation, ConsistencyStatus
+  ReportSourceObservations, SourceObservation, ConsistencyStatus,
+  ReportCsvTransforms, SheetNameMapping
 } from '../contracts/domain.ts';
 import type { WriterContext } from '../contracts/ports.ts';
 import { DomainError, toSafeDomainError } from '../contracts/errors.ts';
 import { isExportReport } from '../contracts/validation.ts';
 import type { PreparedSheet } from './prepare.ts';
+import { mapCsvFilenames, mapWorksheetNames, type SheetInput } from './names.ts';
 
 export const PROVISIONAL_MAX_WARNINGS = 4096;
 
@@ -26,6 +28,8 @@ const FORBIDDEN_CONTEXT_KEYS = [
 export interface BuildCompleteExportReportOptions {
   readonly maxWarnings: number;
   readonly signal: AbortSignal;
+  /** Actual encodeCsvSheets result for these prepared sheets; never caller-estimated counts. */
+  readonly csvTransformCounts?: ReportCsvTransforms;
 }
 
 function isSafeNonNegInt(val: unknown, max: number): val is number {
@@ -53,11 +57,11 @@ export function buildCompleteExportReport(
   report: ExportReport,
   options: BuildCompleteExportReportOptions
 ): ExportReport {
-  let maxWarnings: number, signal: AbortSignal;
+  let maxWarnings: number, signal: AbortSignal, rawCsvTransformCounts: ReportCsvTransforms | undefined;
 
   try {
     if (!options || typeof options !== 'object' || Array.isArray(options)) throw new DomainError('CONFIG_INVALID');
-    const { maxWarnings: rawMax, signal: rawSig } = options;
+    const { maxWarnings: rawMax, signal: rawSig, csvTransformCounts: rawTransforms } = options;
     if (
       !isSafeNonNegInt(rawMax, PROVISIONAL_MAX_WARNINGS) || !rawSig || typeof rawSig !== 'object' ||
       typeof rawSig.aborted !== 'boolean' || typeof (rawSig as any).addEventListener !== 'function' ||
@@ -66,7 +70,9 @@ export function buildCompleteExportReport(
       throw new DomainError('CONFIG_INVALID');
     }
     if (rawSig.aborted) throw new DomainError('OPERATION_ABORTED');
-    maxWarnings = rawMax; signal = rawSig;
+    maxWarnings = rawMax;
+    signal = rawSig;
+    rawCsvTransformCounts = rawTransforms;
   } catch (err) {
     if (err instanceof DomainError) throw toSafeDomainError(err);
     throw new DomainError('CONFIG_INVALID');
@@ -74,9 +80,14 @@ export function buildCompleteExportReport(
 
   try {
     if (signal.aborted) throw new DomainError('OPERATION_ABORTED');
-    if (!context || typeof context !== 'object' || context.format !== 'json') {
+    if (!context || typeof context !== 'object') {
       throw new DomainError('FORMAT_SERIALIZATION_FAILED');
     }
+    const targetFormat = context.format;
+    if (targetFormat !== 'json' && targetFormat !== 'csv' && targetFormat !== 'xlsx') {
+      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+    }
+
     for (const k of FORBIDDEN_CONTEXT_KEYS) {
       if (k in context && (context as any)[k] !== undefined) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
     }
@@ -95,9 +106,17 @@ export function buildCompleteExportReport(
 
     if (!isExportReport(report)) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
 
-    if (report.export.complete !== true || report.export.format !== 'json') throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+    if (report.export.complete !== true || report.export.format !== targetFormat) {
+      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+    }
     if (report.export.consistency === 'not_atomic_changes_detected') throw new DomainError('SOURCE_CHANGED_CONCURRENTLY');
-    if ('csvTransformCounts' in report && (report as any).csvTransformCounts !== undefined) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+
+    if (targetFormat !== 'csv') {
+      if (rawCsvTransformCounts !== undefined) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      if ('csvTransformCounts' in report && (report as any).csvTransformCounts !== undefined) {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+    }
 
     if (compareTimestamps(report.export.producedAt, report.export.startedAt) < 0) {
       throw new DomainError('FORMAT_SERIALIZATION_FAILED');
@@ -178,6 +197,32 @@ export function buildCompleteExportReport(
       throw new DomainError('FORMAT_SERIALIZATION_FAILED');
     }
 
+    const sheetInputs: SheetInput[] = [];
+    for (let i = 0; i < sheetCount; i++) {
+      const s = context.sheets[i];
+      if (!s || typeof s.id !== 'number' || typeof s.title !== 'string') {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+      sheetInputs.push({ id: s.id, title: s.title });
+    }
+
+    let derivedMappings: readonly SheetNameMapping[];
+    if (targetFormat === 'json') {
+      derivedMappings = sheetInputs.map(s => Object.freeze({
+        sheetId: s.id,
+        originalTitle: s.title,
+        exportedName: s.title
+      }));
+    } else if (targetFormat === 'csv') {
+      derivedMappings = mapCsvFilenames(sheetInputs);
+    } else {
+      derivedMappings = mapWorksheetNames(sheetInputs);
+    }
+
+    if (!Array.isArray(derivedMappings) || derivedMappings.length !== sheetCount) {
+      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+    }
+
     const seenSheetIds = new Set<number>();
     for (let i = 0; i < sheetCount; i++) {
       const meta = context.sheets[i];
@@ -186,6 +231,7 @@ export function buildCompleteExportReport(
       const cs = context.scopes[i];
       const rs = report.selectedScopes[i];
       const m = report.nameMappings[i];
+      const d = derivedMappings[i];
       const p = prepared[i];
 
       if (
@@ -203,7 +249,9 @@ export function buildCompleteExportReport(
         rs.rect.c1 !== cs.rect.c1 ||
         m.sheetId !== meta.id ||
         m.originalTitle !== meta.title ||
-        m.exportedName !== meta.title ||
+        m.sheetId !== d.sheetId ||
+        m.originalTitle !== d.originalTitle ||
+        m.exportedName !== d.exportedName ||
         p.metadata.id !== meta.id ||
         p.metadata.title !== meta.title ||
         p.metadata.index !== meta.index ||
@@ -219,10 +267,173 @@ export function buildCompleteExportReport(
       seenSheetIds.add(meta.id);
     }
 
+    let frozenCsvTransformCounts: ReportCsvTransforms | undefined;
+    if (targetFormat === 'csv') {
+      if (!rawCsvTransformCounts || typeof rawCsvTransformCounts !== 'object' || Array.isArray(rawCsvTransformCounts)) {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+      const allowedKeys = new Set(['policy', 'totalTransformedCells', 'bySheet']);
+      const rawKeys = Object.keys(rawCsvTransformCounts);
+      if (
+        rawKeys.length !== 3 ||
+        !('policy' in rawCsvTransformCounts) ||
+        !('totalTransformedCells' in rawCsvTransformCounts) ||
+        !('bySheet' in rawCsvTransformCounts)
+      ) {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+      for (const k of rawKeys) {
+        if (!allowedKeys.has(k)) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+
+      const capturedPolicy = rawCsvTransformCounts.policy;
+      const capturedTotal = rawCsvTransformCounts.totalTransformedCells;
+      const capturedBySheet = rawCsvTransformCounts.bySheet;
+
+      if (capturedPolicy !== 'apostrophe_prefix_v1') {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+      if (
+        typeof capturedTotal !== 'number' ||
+        !Number.isSafeInteger(capturedTotal) ||
+        capturedTotal < 0 ||
+        Object.is(capturedTotal, -0)
+      ) {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+      if (!Array.isArray(capturedBySheet) || capturedBySheet.length !== sheetCount) {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+
+      let runningTotal = 0;
+      const clonedBySheet: { readonly sheetId: number; readonly transformedCells: number }[] = [];
+      for (let i = 0; i < sheetCount; i++) {
+        if ((i & 63) === 0 && signal.aborted) throw new DomainError('OPERATION_ABORTED');
+        const item = capturedBySheet[i];
+        if (!item || typeof item !== 'object' || Array.isArray(item)) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        const itemKeys = Object.keys(item);
+        if (itemKeys.length !== 2 || !('sheetId' in item) || !('transformedCells' in item)) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+        for (const k of itemKeys) {
+          if (k !== 'sheetId' && k !== 'transformedCells') throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+
+        const itemSheetId = item.sheetId;
+        const itemTransformedCells = item.transformedCells;
+
+        if (itemSheetId !== context.sheets[i].id) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+        if (
+          typeof itemTransformedCells !== 'number' ||
+          !Number.isSafeInteger(itemTransformedCells) ||
+          itemTransformedCells < 0 ||
+          Object.is(itemTransformedCells, -0)
+        ) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+
+        let stringCellCount = 0;
+        const sheetCells = prepared[i].cells;
+        for (let c = 0; c < sheetCells.length; c++) {
+          if ((c & 127) === 0 && signal.aborted) throw new DomainError('OPERATION_ABORTED');
+          if (sheetCells[c].kind === 'string') {
+            stringCellCount++;
+          }
+        }
+        if (itemTransformedCells > stringCellCount) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+
+        runningTotal += itemTransformedCells;
+        if (!Number.isSafeInteger(runningTotal)) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+
+        clonedBySheet.push(Object.freeze({
+          sheetId: itemSheetId,
+          transformedCells: itemTransformedCells
+        }));
+      }
+
+      if (runningTotal !== capturedTotal) {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
+
+      frozenCsvTransformCounts = Object.freeze({
+        policy: 'apostrophe_prefix_v1',
+        totalTransformedCells: capturedTotal,
+        bySheet: Object.freeze(clonedBySheet)
+      });
+
+      if ('csvTransformCounts' in report && (report as any).csvTransformCounts !== undefined) {
+        const repTransforms = (report as any).csvTransformCounts;
+        if (!repTransforms || typeof repTransforms !== 'object' || Array.isArray(repTransforms)) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+        const repKeys = Object.keys(repTransforms);
+        if (
+          repKeys.length !== 3 ||
+          !('policy' in repTransforms) ||
+          !('totalTransformedCells' in repTransforms) ||
+          !('bySheet' in repTransforms)
+        ) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+        for (const k of repKeys) {
+          if (!allowedKeys.has(k)) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+
+        const repPolicy = repTransforms.policy;
+        const repTotal = repTransforms.totalTransformedCells;
+        const repBySheet = repTransforms.bySheet;
+
+        if (repPolicy !== frozenCsvTransformCounts.policy || repTotal !== frozenCsvTransformCounts.totalTransformedCells) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+        if (!Array.isArray(repBySheet) || repBySheet.length !== sheetCount) {
+          throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+        }
+        for (let i = 0; i < sheetCount; i++) {
+          const repItem = repBySheet[i];
+          if (!repItem || typeof repItem !== 'object' || Array.isArray(repItem)) {
+            throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+          }
+          const rItemKeys = Object.keys(repItem);
+          if (rItemKeys.length !== 2 || !('sheetId' in repItem) || !('transformedCells' in repItem)) {
+            throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+          }
+          for (const k of rItemKeys) {
+            if (k !== 'sheetId' && k !== 'transformedCells') throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+          }
+          if (
+            repItem.sheetId !== frozenCsvTransformCounts.bySheet[i].sheetId ||
+            repItem.transformedCells !== frozenCsvTransformCounts.bySheet[i].transformedCells
+          ) {
+            throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+          }
+        }
+      }
+    }
+
     for (const w of report.export.warnings) {
+      if (w.code === 'CSV_TEXT_ESCAPED') {
+        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
+      }
       if (typeof w.sheetId === 'number' && !seenSheetIds.has(w.sheetId)) {
         throw new DomainError('FORMAT_SERIALIZATION_FAILED');
       }
+    }
+
+    const willAddCsvWarning =
+      targetFormat === 'csv' &&
+      frozenCsvTransformCounts !== undefined &&
+      frozenCsvTransformCounts.totalTransformedCells > 0;
+
+    const finalWarningsCount = report.export.warnings.length + (willAddCsvWarning ? 1 : 0);
+    if (finalWarningsCount > maxWarnings) {
+      throw new DomainError('SIZE_LIMIT_EXCEEDED');
     }
 
     if (!Array.isArray(report.exclusions)) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
@@ -254,11 +465,18 @@ export function buildCompleteExportReport(
       Object.freeze(typeof w.sheetId === 'number' ? { code: w.code, message: w.message, sheetId: w.sheetId } : { code: w.code, message: w.message })
     );
 
+    if (willAddCsvWarning) {
+      warnings.push(Object.freeze({
+        code: 'CSV_TEXT_ESCAPED',
+        message: 'Some source strings were prefixed for CSV safety. JSON preserves original values.'
+      }));
+    }
+
     const exportMeta = Object.freeze({
       startedAt: report.export.startedAt,
       producedAt: report.export.producedAt,
       mode: report.export.mode,
-      format: 'json' as const,
+      format: targetFormat,
       visibility: report.export.visibility,
       complete: true as const,
       consistency: report.export.consistency as Exclude<ConsistencyStatus, 'not_atomic_changes_detected'>,
@@ -306,7 +524,7 @@ export function buildCompleteExportReport(
       }))),
       sheetOrder: Object.freeze([...report.sheetOrder]),
       limitsVersion: report.limitsVersion,
-      nameMappings: Object.freeze(report.nameMappings.map(m => Object.freeze({
+      nameMappings: Object.freeze(derivedMappings.map(m => Object.freeze({
         sheetId: m.sheetId,
         originalTitle: m.originalTitle,
         exportedName: m.exportedName
@@ -316,7 +534,8 @@ export function buildCompleteExportReport(
         excludedRows: Object.freeze(e.excludedRows.map((iv: DimensionInterval) => Object.freeze({ start: iv.start, end: iv.end }))),
         excludedColumns: Object.freeze(e.excludedColumns.map((iv: DimensionInterval) => Object.freeze({ start: iv.start, end: iv.end })))
       }))),
-      ...(sourceObservations !== undefined ? { sourceObservations } : {})
+      ...(sourceObservations !== undefined ? { sourceObservations } : {}),
+      ...(targetFormat === 'csv' && frozenCsvTransformCounts !== undefined ? { csvTransformCounts: frozenCsvTransformCounts } : {})
     });
 
     if (signal.aborted) throw new DomainError('OPERATION_ABORTED');
