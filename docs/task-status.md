@@ -1,6 +1,6 @@
 # Current implementation status
 
-Updated: 2026-11-01 (Asia/Saigon). Detailed chronology: [execution-history.md](execution-history.md). Read this current state and the assigned task card; open only relevant handoffs/contracts.
+Updated: 2026-11-02 (Asia/Saigon). Detailed chronology: [execution-history.md](execution-history.md). Read this current state and the assigned task card; open only relevant handoffs/contracts.
 
 ## Execution agreement
 
@@ -48,10 +48,11 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T28a XLSX primitive | `adce308`; scalar-only workbook, OOXML text fidelity, safe cancellation/errors; packaging pending |
 | T27b common CSV/XLSX report binding | `5b58698`; actual encoder counts and controlled CSV warning |
 | T27c1 ZIP transport primitive | `6fc59dd`; bounded exact entry bytes, independent ZIP32/native inflate oracle |
-| T29c XLSX companion packaging | Reviewed job `a274a084-8b40-4cce-9e7e-c398f46d3852`; bound report, aggregate pair byte cap and actual workbook mapping |
+| T29c XLSX companion packaging | `51dd456`; bound report, aggregate pair byte cap and actual workbook mapping |
+| T24d1 shared writer lifecycle | Reviewed job `b21767eb-6949-4f8b-9470-ef9efa212d43`; async serializer support, generation/phase fences, unchanged JSON behavior |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
-Latest integration checkpoint after T28a and report extraction: strict typecheck, **682/682 tests across 38 files**, schema check and scaffold production build PASS. Schema hash prefix `7c4143a7d76f9252`. New writer modules are not wired into the runtime/UI, so this build is not browser writer evidence.
+Latest integration checkpoint after T24d1: strict typecheck, **716/716 tests across 42 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at 682-test checkpoint. New writer modules are not wired into the runtime/UI, so that build is not browser writer evidence.
 
 ## In progress / next boundaries
 
@@ -60,6 +61,7 @@ Latest integration checkpoint after T28a and report extraction: strict typecheck
 - **T27c1 accepted offline**: byte-preserving entries plus manifest last, canonical single-component names, exact aggregate preflight and compressed output caps. Lead fixed valid consecutive-dot filenames and strengthened native ZIP32 reader bounds/local-CD/CRC checks, post-compression abort and malformed provider output tests. Isolated strict typecheck +8 tests and main targeted8 PASS. Report validation and complete CSV artifact assembly remain next; this helper only transports bytes.
 - **T29c accepted offline**: private workbook + companion JSON, report binding before serialization, actual mapping comparison and aggregate byte cap. Lead removed duplicate whole-file buffers, tightened config failure/zero remainder handling, improved independent oracle fields and added real pending serialization abort/late rejection. Main strict typecheck +43 related tests PASS (9 package cases). No WriterPort/UI/desktop or download completion claim.
 - **T27c2 CSV artifact assembly**, isolated `.local/worktrees/t27c2`: job `95b4471e-3f63-42a5-aca0-1cff2db69db7`. Single CSV stages optional separate metadata for explicit action; multi-tab ZIP includes bound complete manifest. Review only after terminal.
+- **T24d1 accepted offline** after independent review despite bridge backend DNS failure: common buffering/coverage/lifecycle extracted, JSON is a small adapter; trusted serializers own format/report checks. Lead added ownership fence after preparation and stale-serializer regression. Strict typecheck +23 targeted tests PASS, including unchanged 14 JSON tests. Full 716-test integration PASS. CSV/XLSX adapters are next, then worker/controller wiring.
 - Next after those reviews: CSV ZIP/manifest/single-tab metadata packaging; XLSX companion report; bounded WriterPort lifecycle; worker bridge/controller/download integration. Do not mark parent T27/T29 complete prematurely.
 - Production Google adapters/gates, UI composition, lifecycle/privacy audit, benchmarks and release gates remain pending. Offline pure work may continue with reviewed ports; missing prerequisites never authorize a weaker permission gate.
 
