@@ -1,6 +1,6 @@
 # Implementation status
 
-Updated: 2026-10-31 (Asia/Saigon).
+Updated: 2026-11-01 (Asia/Saigon).
 
 ## Working agreement
 
@@ -110,3 +110,5 @@ Context snapshot pushed as ada7129. T25b job 7f2960e0-eb36-4c1c-98e7-c13afb8fd6a
 T25b pushed as c61c516. T24c1b job a8e27887-d154-4daa-9c6c-6d49ef10279d reviewed: bounded immutable partial-chunk snapshot, selected-scope containment, copied Cell/interval validation and no retained raw DTO fields. Lead fixed key membership mask escape and added regression; main strict typecheck +6 tests PASS. AGENTS.md now records three proven review patterns without changing scope/contracts. XLSX/CSV batch remain isolated; package/lock writer dependency changes are still reserved for upcoming T28 commit.
 
 Chunk snapshot pushed as f5b2f0a. T27a job a56f94ac-d664-4a54-aec6-3cb354d76123 reviewed without implementation corrections: source-order per-tab CSV files, exact aggregate byte budget and actual apostrophe_prefix_v1 transform counts, dense gaps/blank tabs retained. Added API precondition note; reviewer isolated strict typecheck +5 independent-parser tests and main targeted5 PASS. ZIP/manifest/report binding/lifecycle remain pending, not a completed T27 claim. JSON WriterPort and XLSX primitive still run separately.
+
+T27a pushed as 0dc3c6a. T24c1c correction job e7d05669-aac5-4100-92e6-e5861d47bb1c reviewed: JSON WriterPort owns bounded immutable snapshots, validates complete prepared data/report, stages independent private bytes and clears owned references. Generation/phase fences protect synchronous reentry and old finalize cleanup after abort plus immediate new begin; format is checked on the captured context. Reviewer strict typecheck +14 targeted lifecycle/race tests PASS; added exact single format-read regression. No worker/UI/download/acquisition authority is implied. XLSX corrections and common report extraction remain separate jobs.
