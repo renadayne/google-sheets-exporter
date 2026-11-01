@@ -10,35 +10,16 @@
 import type { NormalizedChunk, ExportScope } from '../contracts/domain.ts';
 import type { WriterContext } from '../contracts/ports.ts';
 import { DomainError, toSafeDomainError } from '../contracts/errors.ts';
+import { snapshotWriterContext } from './context.ts';
 
 /** Provisional resource guard bounding pairwise comparison complexity, not a benchmark claim. */
 export const PROVISIONAL_MAX_CHUNKS = 4096;
 
-const CONTEXT_KEYS = [
-  'sourceId',
-  'title',
-  'locale',
-  'timeZone',
-  'scopes',
-  'mode',
-  'format',
-  'visibility',
-  'limitsVersion',
-  'sheetOrder',
-  'sheets'
-] as const;
-
-const SHEET_META_KEYS = ['id', 'title', 'index', 'type', 'hidden', 'rows', 'columns'] as const;
-const SCOPE_KEYS = ['sheetId', 'rect'] as const;
 const RECT_KEYS = ['sheetId', 'r0', 'c0', 'r1', 'c1'] as const;
 const CHUNK_KEYS = ['jobId', 'chunkId', 'rect', 'cells', 'excludedIntervals', 'byteCount'] as const;
 
 function isNonNegativeSafeInt(val: unknown): val is number {
   return typeof val === 'number' && Number.isSafeInteger(val) && val >= 0 && !Object.is(val, -0);
-}
-
-function isPositiveSafeInt(val: unknown): val is number {
-  return typeof val === 'number' && Number.isSafeInteger(val) && val > 0 && !Object.is(val, -0);
 }
 
 function isNonEmptyString(val: unknown): val is string {
@@ -104,84 +85,11 @@ export function assertWriterCoverage(
       throw new DomainError('SIZE_LIMIT_EXCEEDED');
     }
 
-    if (!hasExactKeys(context, CONTEXT_KEYS)) {
-      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-    }
-    if (
-      !isNonEmptyString(context.sourceId) ||
-      typeof context.title !== 'string' ||
-      !isNonEmptyString(context.locale) ||
-      !isNonEmptyString(context.timeZone) ||
-      !isNonEmptyString(context.limitsVersion)
-    ) {
-      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-    }
-    if (
-      (context.mode !== 'formatted' && context.mode !== 'raw' && context.mode !== 'formula_text') ||
-      (context.format !== 'xlsx' && context.format !== 'csv' && context.format !== 'json') ||
-      (context.visibility !== 'include_all' && context.visibility !== 'api_visible')
-    ) {
-      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-    }
+    const validContext = snapshotWriterContext(context, { maxSheets: maxChunks, signal });
 
-    if (!Array.isArray(context.scopes) || !Array.isArray(context.sheetOrder) || !Array.isArray(context.sheets)) {
-      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-    }
-
-    const sheetCount = context.scopes.length;
-    if (sheetCount === 0 || context.sheetOrder.length !== sheetCount || context.sheets.length !== sheetCount) {
-      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-    }
-
-    const seenSheetIds = new Set<number>();
-    const seenIndices = new Set<number>();
     const scopeMap = new Map<number, ExportScope>();
-
-    for (let i = 0; i < sheetCount; i++) {
-      if (signal.aborted) throw new DomainError('OPERATION_ABORTED');
-      const sheetId = context.sheetOrder[i];
-      const scope = context.scopes[i];
-      const meta = context.sheets[i];
-
-      if (!isNonNegativeSafeInt(sheetId) || seenSheetIds.has(sheetId)) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      seenSheetIds.add(sheetId);
-
-      if (!scope || scope.sheetId !== sheetId || !meta || meta.id !== sheetId) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-
-      if (!hasExactKeys(meta, SHEET_META_KEYS) || typeof meta.title !== 'string' || !isNonNegativeSafeInt(meta.index)) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      if ((i > 0 && meta.index <= context.sheets[i - 1].index) || seenIndices.has(meta.index)) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      seenIndices.add(meta.index);
-
-      if (meta.type !== 'GRID' || typeof meta.hidden !== 'boolean') {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      if (meta.hidden && context.visibility === 'api_visible') {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      if (!isPositiveSafeInt(meta.rows) || !isPositiveSafeInt(meta.columns)) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-
-      if (!hasExactKeys(scope, SCOPE_KEYS) || !hasExactKeys(scope.rect, RECT_KEYS) || scope.rect.sheetId !== sheetId) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      const { r0, c0, r1, c1 } = scope.rect;
-      if (!isNonNegativeSafeInt(r0) || !isNonNegativeSafeInt(c0) || !isNonNegativeSafeInt(r1) || !isNonNegativeSafeInt(c1)) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-      if (r0 >= r1 || c0 >= c1 || r1 > meta.rows || c1 > meta.columns) {
-        throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-      }
-
-      scopeMap.set(sheetId, scope);
+    for (const scope of validContext.scopes) {
+      scopeMap.set(scope.sheetId, scope);
     }
 
     const firstChunk = chunks[0];
@@ -195,7 +103,7 @@ export function assertWriterCoverage(
 
     const seenChunkIds = new Set<string>();
     const chunksBySheet = new Map<number, NormalizedChunk[]>();
-    for (const sheetId of context.sheetOrder) {
+    for (const sheetId of validContext.sheetOrder) {
       chunksBySheet.set(sheetId, []);
     }
 
@@ -236,7 +144,7 @@ export function assertWriterCoverage(
     }
 
     let comparisonCount = 0;
-    for (const sheetId of context.sheetOrder) {
+    for (const sheetId of validContext.sheetOrder) {
       if (signal.aborted) throw new DomainError('OPERATION_ABORTED');
       const sheetChunks = chunksBySheet.get(sheetId)!;
       if (sheetChunks.length === 0) {
