@@ -227,3 +227,30 @@ export function formatWorkbookArtifactFilename(
 
   return `${stem}${ext}`;
 }
+
+/**
+ * Formats companion metadata artifact filename (<stem>.metadata.json) for a safe primary (.xlsx/.csv).
+ * Preserves complete 14-byte '.metadata.json' suffix under the 120-byte portable cap.
+ * Long companion stems may shorten at Unicode boundaries to fit; source mappings remain unaffected.
+ */
+export function formatMetadataArtifactFilename(primaryFilename: string): string {
+  if (typeof primaryFilename !== 'string' || primaryFilename.length > MAX_CSV_FILENAME_UTF8_BYTES) {
+    throw new DomainError('FORMAT_UNSUPPORTED');
+  }
+  let ext: AllowedWorkbookExtension;
+  let stem: string;
+  if (primaryFilename.endsWith('.xlsx')) {
+    ext = 'xlsx';
+    stem = primaryFilename.slice(0, -5);
+  } else if (primaryFilename.endsWith('.csv')) {
+    ext = 'csv';
+    stem = primaryFilename.slice(0, -4);
+  } else {
+    throw new DomainError('FORMAT_UNSUPPORTED');
+  }
+  if (!stem || formatWorkbookArtifactFilename(stem, ext) !== primaryFilename) {
+    throw new DomainError('FORMAT_UNSUPPORTED');
+  }
+  const companionStem = truncateUtf8(stem, MAX_CSV_FILENAME_UTF8_BYTES - 14);
+  return formatWorkbookArtifactFilename(`${companionStem}.metadata`, 'json');
+}
