@@ -13,7 +13,7 @@ The [ZIP64 advisory](https://github.com/advisories/GHSA-px8p-9vwx-vf98) lists 0.
 - The two archives were byte-identical at 503 bytes for this fixture only.
 - A malformed ZIP64 sentinel fixture without its extra field terminated in a bounded child process. It did **not** reject the fixture; termination is the checked property.
 
-Machine-local scripts/results remain ignored under `.local/`; this is a recorded manual check, not a committed CI regression. Browser execution of the updated root writer bundle and wider ZIP corpus checks remain pending. No universal compatibility or malformed-archive rejection claim follows.
+Machine-local patch scripts/results remain ignored under `.local/`; this is a recorded manual check, not a committed CI regression. T36a now verifies updated root writer encoding in a real Chrome MV3 module Worker, including independent native ZIP/CSV oracles; see [root writer browser evidence](root-writer-browser.md). Wider ZIP corpus and malformed-ZIP64 browser decoder checks remain pending. No universal compatibility or malformed-archive rejection claim follows.
 
 ## Remaining audit findings
 
