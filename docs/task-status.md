@@ -50,10 +50,11 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T27c1 ZIP transport primitive | `6fc59dd`; bounded exact entry bytes, independent ZIP32/native inflate oracle |
 | T29c XLSX companion packaging | `51dd456`; bound report, aggregate pair byte cap and actual workbook mapping |
 | T24d1 shared writer lifecycle | `ea725ff`; async serializer support, generation/phase fences, unchanged JSON behavior |
-| T27c2 CSV artifact assembly | Reviewed job `95b4471e-3f63-42a5-aca0-1cff2db69db7`; complete bound manifest, single CSV/optional metadata or multi-tab ZIP |
+| T27c2 CSV artifact assembly | `6d4158e`; complete bound manifest, single CSV/optional metadata or multi-tab ZIP |
+| T24d2 CSV/XLSX WriterPort adapters | Reviewed job `b8ea4429-8c9f-40f1-b650-c9e06a36d46f`; captured format budgets, shared lifecycle and real packagers |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
-Latest integration checkpoint after T24d1: strict typecheck, **716/716 tests across 42 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at 682-test checkpoint. New writer modules are not wired into the runtime/UI, so that build is not browser writer evidence.
+Latest integration checkpoint after T24d2: strict typecheck, **730/730 tests across 44 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at 682-test checkpoint. New writer modules are not wired into the runtime/UI, so that build is not browser writer evidence.
 
 ## In progress / next boundaries
 
@@ -63,6 +64,8 @@ Latest integration checkpoint after T24d1: strict typecheck, **716/716 tests acr
 - **T29c accepted offline**: private workbook + companion JSON, report binding before serialization, actual mapping comparison and aggregate byte cap. Lead removed duplicate whole-file buffers, tightened config failure/zero remainder handling, improved independent oracle fields and added real pending serialization abort/late rejection. Main strict typecheck +43 related tests PASS (9 package cases). No WriterPort/UI/desktop or download completion claim.
 - **T27c2 accepted offline** after independent review despite backend stream/print timeout: single CSV stages optional companion metadata for explicit user action; multi-tab ZIP carries complete bound manifest and actual safety counts. Lead removed redundant buffers, fixed config-error classification, strengthened independent manifest fields/aggregate cap and real api_visible gap/exclusion case. Isolated/main strict typecheck +16 package/ZIP tests PASS. Native ZIP test oracle extracted without weakening checks. Default single-tab download must remain exactly one CSV when controller is implemented.
 - **T24d1 accepted offline** after independent review despite bridge backend DNS failure: common buffering/coverage/lifecycle extracted, JSON is a small adapter; trusted serializers own format/report checks. Lead added ownership fence after preparation and stale-serializer regression. Strict typecheck +23 targeted tests PASS, including unchanged 14 JSON tests. Full 716-test integration PASS. CSV/XLSX adapters are next, then worker/controller wiring.
+- **T24d2 accepted offline**: CSV/XLSX thin adapters capture 7 options once, validate format caps and delegate all lifecycle/report/format work to accepted helpers; XLSX encoder uses same maxCells as core. Lead strengthened error-code/knownchange/incomplete report/single-read and real async fresh-session race tests. Strict typecheck +29 targeted and full730 tests PASS. All three format WriterPorts are available; production worker/controller/UI/download integration remains pending.
+- **T36a browser writer harness**, isolated `.local/worktrees/t36a`: job `449e3551-db94-47e7-946c-5b490861c12b`. Real MV3 page/module Worker, current writer modules, fresh workspace profile and independent output readers. This is a synthetic smoke harness, not production worker integration or desktop/live evidence.
 - Next after those reviews: CSV ZIP/manifest/single-tab metadata packaging; XLSX companion report; bounded WriterPort lifecycle; worker bridge/controller/download integration. Do not mark parent T27/T29 complete prematurely.
 - Production Google adapters/gates, UI composition, lifecycle/privacy audit, benchmarks and release gates remain pending. Offline pure work may continue with reviewed ports; missing prerequisites never authorize a weaker permission gate.
 
