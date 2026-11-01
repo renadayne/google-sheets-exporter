@@ -4,8 +4,13 @@ import {
   XLSX_MAX_ROWS,
   XLSX_MAX_COLUMNS,
   XLSX_MAX_TEXT_UTF16_UNITS,
+  XLSX_MAX_LINE_FEEDS,
+  XLSX_MIN_NUMERIC_MAGNITUDE,
+  XLSX_MAX_NUMERIC_MAGNITUDE,
+  XLSX_MAX_SIGNIFICANT_DIGITS,
   assertXlsxRectRepresentable,
-  assertXlsxTextRepresentable
+  assertXlsxTextRepresentable,
+  assertXlsxNumberRepresentable
 } from '../../src/export/xlsx-guards.ts';
 
 describe('T29a XLSX Representability Guards', () => {
@@ -101,5 +106,49 @@ describe('T29a XLSX Representability Guards', () => {
       expect(e.message).toBe(SAFE_ERROR_MESSAGES.FORMAT_UNSUPPORTED);
       expect(e.message).not.toContain('SECRET_LEAK');
     }
+  });
+
+  it('validates numbers: 15-digit screen, exponents, bounds, zeros +/-0, and rejects 16 digits/nonfinites', () => {
+    expect(XLSX_MAX_SIGNIFICANT_DIGITS).toBe(15);
+    for (const valid of [
+      0, -0, 123456789012345, -123456789012345, 1234567890123450,
+      0.1, 45678.5, 0.000012345, 1.23e20,
+      XLSX_MIN_NUMERIC_MAGNITUDE, -XLSX_MIN_NUMERIC_MAGNITUDE,
+      XLSX_MAX_NUMERIC_MAGNITUDE, -XLSX_MAX_NUMERIC_MAGNITUDE
+    ]) {
+      expect(() => assertXlsxNumberRepresentable(valid)).not.toThrow();
+    }
+
+    const testVal1 = 1e-308;
+    const testVal2 = 1e308;
+    const testVal3 = Number.MIN_VALUE;
+    for (const bad of [
+      1234567890123456, -1234567890123456, Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER,
+      0.30000000000000004, testVal1, -testVal1, testVal2, -testVal2,
+      testVal3, -testVal3, NaN, Infinity, -Infinity,
+      '123', '0', new Date(), null, undefined, {}
+    ]) {
+      expect(() => assertXlsxNumberRepresentable(bad as any)).toThrowError(
+        expect.objectContaining({ code: 'FORMAT_UNSUPPORTED' })
+      );
+    }
+    expect(testVal1).toBe(1e-308);
+    expect(testVal2).toBe(1e308);
+    expect(testVal3).toBe(Number.MIN_VALUE);
+  });
+
+  it('validates line feeds: LF 253/254, CRLF 253 exact, and preserves input text', () => {
+    expect(XLSX_MAX_LINE_FEEDS).toBe(253);
+    expect(() => assertXlsxTextRepresentable('\n'.repeat(253))).not.toThrow();
+    expect(() => assertXlsxTextRepresentable('\n'.repeat(254))).toThrowError(
+      expect.objectContaining({ code: 'FORMAT_UNSUPPORTED' })
+    );
+    expect(() => assertXlsxTextRepresentable('\r\n'.repeat(253))).not.toThrow();
+    expect(() => assertXlsxTextRepresentable('\r\n'.repeat(254))).toThrowError(
+      expect.objectContaining({ code: 'FORMAT_UNSUPPORTED' })
+    );
+    const crlfText = 'row\r\n'.repeat(100);
+    assertXlsxTextRepresentable(crlfText);
+    expect(crlfText).toBe('row\r\n'.repeat(100));
   });
 });
