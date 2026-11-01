@@ -45,21 +45,21 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T25 names / companion metadata names | `a3f356d` / `c61c516` |
 | T26 CSV rectangle encoder | `8c1f0d9`; quote-all/BOM/CRLF, formula prefix policy, exact relative rectangle |
 | T27a CSV sheet batch | `0dc3c6a`; aggregate bytes and actual per-sheet transform counts |
-| T28a XLSX primitive | `adce308`; scalar-only workbook, OOXML text fidelity, safe cancellation/errors; packaging pending |
+| T28a XLSX primitive | `adce308`; scalar-only workbook, OOXML text fidelity, safe cancellation/errors; packaged by T29c |
 | T27b common CSV/XLSX report binding | `5b58698`; actual encoder counts and controlled CSV warning |
 | T27c1 ZIP transport primitive | `6fc59dd`; bounded exact entry bytes, independent ZIP32/native inflate oracle |
 | T29c XLSX companion packaging | `51dd456`; bound report, aggregate pair byte cap and actual workbook mapping |
 | T24d1 shared writer lifecycle | `ea725ff`; async serializer support, generation/phase fences, unchanged JSON behavior |
 | T27c2 CSV artifact assembly | `6d4158e`; complete bound manifest, single CSV/optional metadata or multi-tab ZIP |
 | T24d2 CSV/XLSX WriterPort adapters | `bf3038c`; captured format budgets, shared lifecycle and real packagers |
-| T36a real MV3 writer harness | Reviewed isolated/main Chrome156 checks PASS; production bridge remains pending |
+| T36a real MV3 writer harness | `a6f443e`; isolated/main Chrome156 checks PASS; production bridge remains pending |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
 Latest integration checkpoint after T24d2: strict typecheck, **730/730 tests across 44 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at 682-test checkpoint. Production writer modules are not wired into the runtime/UI; separate T36a synthetic writer harness now passes real Chrome execution.
 
 ## Current work and next boundaries
 
-- **No active Antigravity job at this checkpoint.** All accepted writer leaves are committed separately; T36a's final commit is next.
+- **No active Antigravity job at this checkpoint.** All accepted writer leaves and the synthetic browser harness are committed separately and pushed to origin/main.
 - **T36a reviewed PASS for the synthetic harness** after correction job `11c5a68e-a4cd-4976-8bfb-fe35eb2abe69` ended with backend DNS failure. Lead verified actual source, fixed remaining launcher/oracle/cleanup issues and ran strict typecheck plus real Chrome independently on isolated/main checkouts. See [root browser evidence](evidence/root-writer-browser.md) and `docs/handoffs/T36a.md`.
 - All three local WriterPorts, complete report binding and CSV/XLSX packaging are available. Single CSV's staged companion is optional and must require an explicit metadata action; default export remains one CSV.
 - Next bounded work: production T36 message validation/worker bridge/client, then controller/download integration and UI. Follow existing versioned contracts; fixture harness messages are not production validation.
