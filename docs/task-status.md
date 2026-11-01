@@ -10,7 +10,7 @@ Updated: 2026-11-01 (Asia/Saigon). Detailed chronology: [execution-history.md](e
 - User is offline: reuse existing granted permissions; record genuinely new interactive approvals pending and continue independent work. Do not bypass controls.
 - Remote: `https://github.com/renadayne/google-sheets-exporter.git`. Git: `D:\Software\Git\Git\cmd\git.exe`.
 - Ignored `.local/start-agy-job.mjs` and `.local/agy-runtime.json` pin the Flash model without global configuration. Recover running jobs with bridge_list before relaunch; one active job per project. Separate tasks may use ignored detached worktrees. Never edit an active agent's owned files.
-- Root dependencies awaiting T28 acceptance: ExcelJS4.4.0/fflate0.8.3; dev-only XML/SheetJS readers. Do not stage package/lock with unrelated leaves.
+- Root writer dependencies are pinned: ExcelJS4.4.0/fflate0.8.3; dev-only XML/SheetJS readers. Dependency release review remains pending as documented below.
 
 ## Accepted offline foundation
 
@@ -45,13 +45,14 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T25 names / companion metadata names | `a3f356d` / `c61c516` |
 | T26 CSV rectangle encoder | `8c1f0d9`; quote-all/BOM/CRLF, formula prefix policy, exact relative rectangle |
 | T27a CSV sheet batch | `0dc3c6a`; aggregate bytes and actual per-sheet transform counts |
+| T28a XLSX primitive | Reviewed after job `489c762d-ebdc-46c5-a256-807869d2b84a`; scalar-only workbook, OOXML text fidelity, safe cancellation/errors; packaging pending |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
-Latest integration checkpoint: strict typecheck, **667/667 tests across 36 files**, schema check PASS after JSON WriterPort. Subsequent report extraction: strict typecheck and **36 targeted report/document/writer tests PASS**. Schema hash prefix `7c4143a7d76f9252`. Build/real Chrome scaffold last passed earlier; new writer modules are not wired into the runtime/UI.
+Latest integration checkpoint after T28a and report extraction: strict typecheck, **682/682 tests across 38 files**, schema check and scaffold production build PASS. Schema hash prefix `7c4143a7d76f9252`. New writer modules are not wired into the runtime/UI, so this build is not browser writer evidence.
 
 ## In progress / next boundaries
 
-- **T28a XLSX primitive**, isolated `.local/worktrees/t28a`: latest correction job `489c762d-ebdc-46c5-a256-807869d2b84a`. Review after terminal. OOXML literal escapes/CR fidelity and worksheet escaped-looking names were corrected; full exception boundary and abort-registration behavior are under correction. No accepted XLSX primitive yet. Root package/lock + dependency evidence belong to its accepted step.
+- **T28a accepted offline** after two correction rounds: source-order scalar assignments, original coordinates, representability preflight, literal OOXML escape protection and exact CR wire text, guarded provider errors, listener cleanup/cancellation. Lead added transient post-registration getter failure regression; isolated/main strict typecheck and 26 targeted tests PASS. Names now sanitize escaped-looking worksheet patterns before collision/truncation while preserving originalTitle. See handoff and dependency evidence. No WriterPort/companion/UI or desktop compatibility claim.
 - **T27b shared CSV/XLSX report binding**, isolated `.local/worktrees/t27b`: job `9bdc820e-5e86-4810-becb-dc8b5791ec0c`. Adds format/name binding and actual CSV encoder counts with a controlled safety warning; no packaging/downloads.
 - Next after those reviews: CSV ZIP/manifest/single-tab metadata packaging; XLSX companion report; bounded WriterPort lifecycle; worker bridge/controller/download integration. Do not mark parent T27/T29 complete prematurely.
 - Production Google adapters/gates, UI composition, lifecycle/privacy audit, benchmarks and release gates remain pending. Offline pure work may continue with reviewed ports; missing prerequisites never authorize a weaker permission gate.

@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import {
   mapWorksheetNames,
   mapCsvFilenames,
@@ -82,6 +84,46 @@ describe('T25 Pure Worksheet & Filename Mapping', () => {
     expect(resSheet[0].exportedName).toBe('Bad\uFFFDSurrogate\uFFFD');
     const resCsv = mapCsvFilenames([{ id: 7, title: 'Bad\uD800Surrogate\uDFFF' }]);
     expect(resCsv[0].exportedName).toBe('Bad\uFFFDSurrogate\uFFFD.csv');
+  });
+
+  it('sanitizes OOXML-escaped patterns in worksheet names, handles collisions, 31-unit cap, and SheetJS roundtrip', async () => {
+    const input: readonly SheetInput[] = [
+      { id: 1, title: '_x0041_' },
+      { id: 2, title: '-x0041_' },
+      { id: 3, title: '_x0041_' },
+      { id: 4, title: 'A'.repeat(24) + '_x0041_' },
+      { id: 5, title: 'B'.repeat(25) + '_x0041_' }
+    ];
+    const res = mapWorksheetNames(input);
+    expect(res).toEqual([
+      { sheetId: 1, originalTitle: '_x0041_', exportedName: '-x0041_' },
+      { sheetId: 2, originalTitle: '-x0041_', exportedName: '-x0041_~2' },
+      { sheetId: 3, originalTitle: '_x0041_', exportedName: '-x0041_~3' },
+      { sheetId: 4, originalTitle: 'A'.repeat(24) + '_x0041_', exportedName: 'A'.repeat(24) + '-x0041_' },
+      { sheetId: 5, originalTitle: 'B'.repeat(25) + '_x0041_', exportedName: 'B'.repeat(25) + '-x0041' }
+    ]);
+    expect(res[3].exportedName.length).toBe(31);
+    expect(res[4].exportedName.length).toBe(31);
+
+    // Verify source metadata is never renamed
+    expect(input[0].title).toBe('_x0041_');
+    expect(input[1].title).toBe('-x0041_');
+    expect(input[2].title).toBe('_x0041_');
+
+    // Real SheetJS roundtrip verification
+    const wb = new ExcelJS.Workbook();
+    for (const m of res) {
+      wb.addWorksheet(m.exportedName);
+    }
+    const buf = await wb.xlsx.writeBuffer();
+    const readWb = XLSX.read(buf, { type: 'buffer' });
+    expect(readWb.SheetNames).toEqual([
+      '-x0041_',
+      '-x0041_~2',
+      '-x0041_~3',
+      'A'.repeat(24) + '-x0041_',
+      'B'.repeat(25) + '-x0041'
+    ]);
   });
 
   it('maps CSV filenames: invalid Windows chars, trailing dots/spaces, traversal, and controlled .csv', () => {

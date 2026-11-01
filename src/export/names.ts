@@ -113,7 +113,8 @@ export function mapWorksheetNames(orderedSheets: readonly SheetInput[]): readonl
 
   for (const sheet of orderedSheets) {
     const cleanRaw = replaceLoneSurrogates(sheet.title).replace(EXCEL_FORBIDDEN_CHARS, '_');
-    const initialBase = trimApostrophesAndWhitespace(cleanRaw) || `Sheet_${sheet.id}`;
+    const sanitized = cleanRaw.replace(/_(?=[xX][0-9a-fA-F]{4}_)/g, '-');
+    const initialBase = trimApostrophesAndWhitespace(sanitized) || `Sheet_${sheet.id}`;
 
     let exportedName = '';
     for (let step = 0; ; step++) {
