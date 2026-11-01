@@ -28,10 +28,14 @@ async function main() {
 
   await module.evaluate();
 
-  const { validateReport, validateExport } = module.namespace;
+  const { validateReport, validateExport, validateCell } = module.namespace;
 
-  if (typeof validateReport !== 'function' || typeof validateExport !== 'function') {
-    throw new Error('Validator module must export validateReport and validateExport functions');
+  if (
+    typeof validateReport !== 'function' ||
+    typeof validateExport !== 'function' ||
+    typeof validateCell !== 'function'
+  ) {
+    throw new Error('Validator module must export validateReport, validateExport, and validateCell functions');
   }
 
   // 1. Valid metadata-only report
@@ -66,7 +70,17 @@ async function main() {
     throw new Error('validateExport unexpectedly passed for incomplete payload');
   }
 
-  process.stdout.write(JSON.stringify({ ok: true, verifiedChecks: 6 }) + '\n');
+  // 4. Valid and invalid Cell
+  const validCell = { r: 0, c: 0, kind: 'string', value: 'hello' };
+  if (validateCell(validCell) !== true) {
+    throw new Error('validateCell failed for valid string cell');
+  }
+  const invalidCell = { r: 0, c: 0, kind: 'string', value: 123 };
+  if (validateCell(invalidCell) !== false) {
+    throw new Error('validateCell unexpectedly passed for invalid cell');
+  }
+
+  process.stdout.write(JSON.stringify({ ok: true, verifiedChecks: 8 }) + '\n');
 }
 
 main().catch((err) => {

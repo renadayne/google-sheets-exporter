@@ -9,8 +9,9 @@ import addFormats from 'ajv-formats';
 
 import reportSchema from '../../src/contracts/report.schema.json';
 import exportSchema from '../../src/contracts/export.schema.json';
-import { isExportReport, isJsonExportDocument } from '../../src/contracts/validation.ts';
-import { validateReport, validateExport } from '../../src/contracts/generated/validators.js';
+import { isExportReport, isJsonExportDocument, isCell } from '../../src/contracts/validation.ts';
+import { validateReport, validateExport, validateCell } from '../../src/contracts/generated/validators.js';
+import type { Cell } from '../../src/contracts/domain.ts';
 import { generateValidators } from '../../scripts/generate-validators.mjs';
 
 import rawMultiTabFixture from '../fixtures/exports/raw-multitab.json';
@@ -50,11 +51,13 @@ function createDevValidator() {
   const devValidateReport = ajv.getSchema('urn:google-sheets-exporter:report.schema.json')!;
   const devValidateExport = ajv.getSchema('urn:google-sheets-exporter:export.schema.json')!;
 
-  return { devValidateReport, devValidateExport };
+  const devValidateCell = ajv.getSchema('urn:google-sheets-exporter:export.schema.json#/$defs/cell')!;
+
+  return { devValidateReport, devValidateExport, devValidateCell };
 }
 
 describe('T24a Precompiled Static Schema Validation Infrastructure', () => {
-  const { devValidateReport, devValidateExport } = createDevValidator();
+  const { devValidateReport, devValidateExport, devValidateCell } = createDevValidator();
 
   describe('Guard acceptance on valid fixtures', () => {
     it('accepts metadata-only report with isExportReport, rejects with isJsonExportDocument', () => {
@@ -88,6 +91,32 @@ describe('T24a Precompiled Static Schema Validation Infrastructure', () => {
       expect(isJsonExportDocument(canonicalExport)).toBe(true);
       expect(isExportReport(canonicalExport)).toBe(false);
     });
+
+    it('accepts representative valid cells across all 4 Cell kinds with isCell', () => {
+      const stringCell: Cell = { r: 0, c: 0, kind: 'string', value: 'hello' };
+      const stringCellWithFormula: Cell = {
+        r: 0,
+        c: 1,
+        kind: 'string',
+        value: '=SUM(A1:A10)',
+        formulaText: '=SUM(A1:A10)',
+        numberFormatType: 'TEXT'
+      };
+      const numberCell: Cell = { r: 1, c: 0, kind: 'number', value: 42, numberFormatType: 'CURRENCY' };
+      const booleanCellTrue: Cell = { r: 2, c: 0, kind: 'boolean', value: true };
+      const booleanCellFalse: Cell = { r: 2, c: 1, kind: 'boolean', value: false };
+      const errorCell: Cell = {
+        r: 3,
+        c: 0,
+        kind: 'error',
+        value: { code: '#DIV/0!', message: 'Division by zero' }
+      };
+
+      for (const cell of [stringCell, stringCellWithFormula, numberCell, booleanCellTrue, booleanCellFalse, errorCell]) {
+        expect(isCell(cell)).toBe(true);
+        expect(Boolean(devValidateCell(cell))).toBe(true);
+      }
+    });
   });
 
   describe('Representative mutations with dev-only Ajv parity', () => {
@@ -101,6 +130,13 @@ describe('T24a Precompiled Static Schema Validation Infrastructure', () => {
     function assertReportParity(candidate: unknown) {
       const expected = Boolean(devValidateReport(candidate));
       const actual = isExportReport(candidate);
+      expect(actual).toBe(expected);
+      return actual;
+    }
+
+    function assertCellParity(candidate: unknown) {
+      const expected = Boolean(devValidateCell(candidate));
+      const actual = isCell(candidate);
       expect(actual).toBe(expected);
       return actual;
     }
@@ -283,6 +319,39 @@ describe('T24a Precompiled Static Schema Validation Infrastructure', () => {
       expect(assertExportParity(invalidCal)).toBe(false);
       expect(assertExportParity(gibberish)).toBe(false);
     });
+
+    it('rejects invalid cells: missing fields, wrong types, NaN, Date, numeric formulaText, extra accessToken', () => {
+      // Missing required properties
+      expect(assertCellParity({ c: 0, kind: 'string', value: 'no r' })).toBe(false);
+      expect(assertCellParity({ r: 0, kind: 'string', value: 'no c' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, value: 'no kind' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'string' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'error', value: { code: '#REF!' } })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'error', value: { message: 'err' } })).toBe(false);
+
+      // Wrong type / out of bounds
+      expect(assertCellParity({ r: -1, c: 0, kind: 'string', value: 'neg r' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: -1, kind: 'string', value: 'neg c' })).toBe(false);
+      expect(assertCellParity({ r: 1.5, c: 0, kind: 'string', value: 'float r' })).toBe(false);
+      expect(assertCellParity({ r: '0', c: 0, kind: 'string', value: 'string r' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'unknown', value: 'bad kind' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'string', value: 123 })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'number', value: '123' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'boolean', value: 'true' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'error', value: '#VALUE!' })).toBe(false);
+
+      // Non-serializable / non-JSON values (NaN, Date objects)
+      expect(assertCellParity({ r: 0, c: 0, kind: 'number', value: NaN })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'number', value: new Date() })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'string', value: new Date() })).toBe(false);
+
+      // Numeric formulaText: formulaText is forbidden on number cells
+      expect(assertCellParity({ r: 0, c: 0, kind: 'number', value: 42, formulaText: '=40+2' })).toBe(false);
+
+      // Extra unpermitted fields / credentials
+      expect(assertCellParity({ r: 0, c: 0, kind: 'string', value: 'secret', accessToken: 'ya29.xyz' })).toBe(false);
+      expect(assertCellParity({ r: 0, c: 0, kind: 'number', value: 1, extraField: true })).toBe(false);
+    });
   });
 
   describe('Non-mutation and safe error containment', () => {
@@ -333,6 +402,44 @@ describe('T24a Precompiled Static Schema Validation Infrastructure', () => {
       expect(() => isJsonExportDocument(hostileDoc)).not.toThrow();
       expect(isJsonExportDocument(hostileDoc)).toBe(false);
       expect(validateExport.errors).toBeNull();
+    });
+
+    it('does not mutate input cell or coerce types during validation', () => {
+      const validCell = { r: 0, c: 0, kind: 'string', value: 'keep-original' };
+      const validSnapshot = JSON.parse(JSON.stringify(validCell));
+      expect(isCell(validCell)).toBe(true);
+      expect(validCell).toEqual(validSnapshot);
+
+      const invalidCell = { r: 0, c: 0, kind: 'number', value: '42' };
+      const invalidSnapshot = JSON.parse(JSON.stringify(invalidCell));
+      expect(isCell(invalidCell)).toBe(false);
+      expect(invalidCell).toEqual(invalidSnapshot);
+      // Source strings unchanged: no string-to-number coercion occurred
+      expect(typeof invalidCell.value).toBe('string');
+    });
+
+    it('resets generated validator .errors after checking cells', () => {
+      const invalidCell = { r: 'invalid', c: 0 };
+      expect(isCell(invalidCell)).toBe(false);
+      expect(validateCell.errors).toBeNull();
+    });
+
+    it('safely catches hostile property getter detonations on cell without throwing', () => {
+      let reads = 0;
+      const hostileCell = {
+        r: 0,
+        c: 0,
+        kind: 'string',
+        get value() {
+          reads++;
+          throw new Error('Hostile getter detonation in cell value');
+        }
+      };
+
+      expect(() => isCell(hostileCell)).not.toThrow();
+      expect(isCell(hostileCell)).toBe(false);
+      expect(reads).toBeGreaterThan(0);
+      expect(validateCell.errors).toBeNull();
     });
   });
 
@@ -404,7 +511,7 @@ describe('T24a Precompiled Static Schema Validation Infrastructure', () => {
       expect(jsonLine).toBeDefined();
       const result = JSON.parse(jsonLine!);
       expect(result.ok).toBe(true);
-      expect(result.verifiedChecks).toBe(6);
+      expect(result.verifiedChecks).toBe(8);
     });
   });
 });

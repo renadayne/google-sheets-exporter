@@ -1,5 +1,5 @@
-import { validateReport, validateExport } from './generated/validators.js';
-import type { ExportReport, JsonExportDocument } from './domain.ts';
+import { validateReport, validateExport, validateCell } from './generated/validators.js';
+import type { ExportReport, JsonExportDocument, Cell } from './domain.ts';
 
 /**
  * Validates that an unknown value structurally satisfies the ExportReport schema.
@@ -47,6 +47,32 @@ export function isJsonExportDocument(input: unknown): input is JsonExportDocumen
   } finally {
     try {
       validateExport.errors = null;
+    } catch {
+      // In case property assignment fails
+    }
+  }
+}
+
+/**
+ * Validates that an unknown value structurally satisfies the Cell schema.
+ *
+ * Safe wrapper around precompiled static validator:
+ * - Catches hostile getter throws and returns false.
+ * - Resets generated validator `.errors` to null to avoid leaking schema error structures.
+ * - Performs no object mutation or type coercion.
+ *
+ * Note: This certifies schema structure only; selected-scope bounds, safe coordinates,
+ * and formula/mode agreement remain consumer obligations.
+ */
+export function isCell(input: unknown): input is Cell {
+  try {
+    const valid = validateCell(input);
+    return Boolean(valid);
+  } catch {
+    return false;
+  } finally {
+    try {
+      validateCell.errors = null;
     } catch {
       // In case property assignment fails
     }

@@ -30,7 +30,8 @@ export const PINNED_SETTINGS = {
   },
   exports: {
     validateReport: 'urn:google-sheets-exporter:report.schema.json',
-    validateExport: 'urn:google-sheets-exporter:export.schema.json'
+    validateExport: 'urn:google-sheets-exporter:export.schema.json',
+    validateCell: 'urn:google-sheets-exporter:export.schema.json#/$defs/cell'
   },
   vite: {
     target: 'es2022',
@@ -82,10 +83,7 @@ export async function generateValidators(options = {}) {
   ajv.addSchema(reportSchema).addSchema(exportSchema);
 
   // Generate standalone ESM code
-  const standaloneRaw = standaloneCode(ajv, {
-    validateReport: reportSchema.$id,
-    validateExport: exportSchema.$id
-  });
+  const standaloneRaw = standaloneCode(ajv, PINNED_SETTINGS.exports);
 
   // Bundle standalone JS + pure runtime helpers using Vite8
   await mkdir(scratchDir, { recursive: true });
@@ -153,6 +151,7 @@ export async function generateValidators(options = {}) {
     '',
     'export const validateReport: GeneratedValidator;',
     'export const validateExport: GeneratedValidator;',
+    'export const validateCell: GeneratedValidator;',
     ''
   ].join('\n');
 
