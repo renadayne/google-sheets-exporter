@@ -16,6 +16,9 @@
 - A successful Sheets read, OAuth consent or role label does not prove export permission. Denied/uncertain permission must not trigger another extraction path.
 - Preserve absolute coordinates, selected scopes, types and meaningful text. Never compact sparse data, silently truncate, or evaluate source formulas.
 - Tests need independent expected behavior. Validate every relevant oracle field; include negative cases for actual risk. A hard-coded success flag is not a check.
+- For snapshots, capture each known field once, validate that captured value, and copy only captured primitives. Re-reading a getter after validation can copy a different value.
+- Exact-key guards must check every actual enumerable key against the whitelist as well as required own keys/count. Count plus required keys alone can admit extras when another property is non-enumerable.
+- Build successful consumer fixtures through reviewed predecessor helpers. Adversarial getter tests must actually reach the getter they claim to exercise; assert complete values/types as well as coordinates.
 - Never fabricate a dependency/test framework under `node_modules` or mask missing packages with handwritten framework declarations. Use real locked dependencies; if installation is blocked, mark checks pending. Committed build configs must not reference an agent's private scratch/cache directory.
 
 ## Changes and handoff
