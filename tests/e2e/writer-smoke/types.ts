@@ -30,6 +30,17 @@ export interface SmokeClientCounts {
   progressCallbacks: number;
 }
 
+export interface SmokeClientLifecycle {
+  workersCreated: number;
+  terminateCalls: number;
+  cancelledStages: ('begin' | 'append' | 'finalize')[];
+  cancelCodes: string[];
+  requestTypes: string[][];
+  acceptedArtifactsAfterAbort: number;
+  crashCode: string | null;
+  crashWorkerErrors: number;
+}
+
 export interface SmokeResult {
   done: boolean;
   error: string | null;
@@ -44,6 +55,7 @@ export interface SmokeResult {
   } | undefined;
   bridge?: SmokeBridgeCounts | undefined;
   client?: SmokeClientCounts | undefined;
+  clientLifecycle?: SmokeClientLifecycle | undefined;
 }
 
 declare global {

@@ -1,6 +1,6 @@
 # Current implementation status
 
-Updated: 2026-11-02 (Asia/Saigon). Detailed chronology: [execution-history.md](execution-history.md). Read this current state and the assigned task card; open only relevant handoffs/contracts.
+Updated: 2026-11-03 (Asia/Saigon). Detailed chronology: [execution-history.md](execution-history.md). Read this current state and the assigned task card; open only relevant handoffs/contracts.
 
 ## Execution agreement
 
@@ -69,7 +69,7 @@ Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 fil
 | T36c1 host | Six actual writer/structuredClone tests; transfer lists and sender detachment. See `docs/handoffs/T36c1.md`. |
 | T36c2 dedicated entry | Six entry tests plus seven legacy PING tests; measured worker-only installation and cleanup. See `docs/handoffs/T36c2.md`. |
 | T36c3a/b browser evidence | Fixture extraction preserved data/execution. Actual production protocol passes Chrome156 independent JSON/CSV/OOXML oracles; 20 commands, 16ACK, 4PROGRESS, 3STAGED, 1ERROR, 0unexpected. Both Chrome modes pass; no direct production sender-detachment telemetry. See `docs/handoffs/T36c3b.md` and [browser evidence](evidence/root-writer-browser.md). |
-| T36d1/2a one-job client | 33 focused tests after review corrections; safe snapshots, permanent terminal latch and per-op cleanup. Actual Chrome client JSON/CSV/XLSX oracles PASS; four workers/four terminate calls/four progress callbacks. Native cancel/crash still pending. See `docs/handoffs/T36d1.md` and `docs/handoffs/T36d2a.md`. |
+| T36d1/2a/2b one-job client | 33 focused tests after review corrections; safe snapshots, permanent terminal latch and per-op cleanup. Actual Chrome client JSON/CSV/XLSX oracles PASS. Native pending begin/append/finalize cancellations and intentional crash PASS: exact command traces, static errors, four separate lifecycle worker terminations, zero accepted artifacts after abort. See `docs/handoffs/T36d1.md`, `T36d2a.md`, `T36d2b.md`. |
 | T30a phase graph | Six grouped tests; terminal jobs cannot reactivate, completed only after downloading. Full controller/browser completion proof still pending. See `docs/handoffs/T30a.md`. |
 | T30b page job owner | Eight focused tests after cleanup adoption correction; generation fences, supersession and idempotent best-effort cleanup. Full controller remains pending. See `docs/handoffs/T30b.md`. |
 | T30c request snapshot | 23 focused tests; immutable page-only request, preserved source order/absolute scopes, principal deliberately kept out of worker projection. See `docs/handoffs/T30c.md`. |
@@ -82,9 +82,9 @@ Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 fil
 ## Current work and next boundaries
 
 - **Accepted checkpoint**: root strict typecheck, **1049/1049 tests across 60 files**, schema check and all three actual Chrome harness modes PASS. No product download or live acquisition is exercised.
-- **Active bounded task**: T36d2b native client cancellation/crash checks (`74128e83-257d-44a2-9df9-1615004cdbc0`, root). Review only after terminal handoff. Next controller prerequisite: sanitized WriterContext projection from the accepted request and selected workbook metadata.
+- **Terminal task awaiting integration review**: T30d sanitized WriterContext projection (`5f7aaacf-e1dc-4825-98c9-1b049f51673d`, isolated `.local/worktrees/t30d`). T36d2b native cancellation/crash checks accepted after independent strict typecheck and all three Chrome modes PASS.
 - T36d1 implementation and correction jobs ended with backend DNS errors after saving completed files; lead reviewed actual code, corrected remaining constructor/signal/context ownership issues and independently verified the checkpoint above. No model fallback or new user approval was used.
-- Next bounded work: native client Chrome verification, then controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
+- Next bounded work: integrate sanitized context, then controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
 - Google adapters/permission gates, limit calibration, lifecycle/privacy audit and release checks remain pending. G1/G7 still require the user's Google/OAuth/live tenant setup; fixtures do not approve live permission or release claims.
 - Open only the assigned task card and relevant helper signatures/handoff. Detailed corrections remain in handoffs and Git history, not mandatory context for every small task.
 

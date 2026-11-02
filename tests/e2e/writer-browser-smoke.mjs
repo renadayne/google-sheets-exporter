@@ -282,11 +282,16 @@ try {
   assert.equal(consoleErrors.length, 0, `Page console errors observed: ${consoleErrors.join('; ')}`);
 
   console.log('[T36a E2E] Observed page console and runtime errors: 0.');
-  console.log('[T36a E2E] Note: Dedicated worker runs in worker thread context; worker error events (onerror, onmessageerror) verified 0; page target CDP observes page runtime/console.');
+  if (isClient) {
+    console.log('[T36a E2E] Note: Dedicated worker runs in worker thread context; worker error events verified: exactly 1 intentional native crash event; parent page errors still 0; page target CDP observes page runtime/console.');
+  } else {
+    console.log('[T36a E2E] Note: Dedicated worker runs in worker thread context; worker error events (onerror, onmessageerror) verified 0; page target CDP observes page runtime/console.');
+  }
 
   if (isBridge) {
     console.log('[T36a E2E] production worker sender detachment telemetry unavailable; host native structuredClone checked separately');
     assert.equal(smokeResult.transferredBufferByteLengths, undefined, 'transferredBufferByteLengths must be omitted in bridge mode');
+    assert.equal(smokeResult.clientLifecycle, undefined, 'clientLifecycle must be omitted in bridge mode');
     assert.ok(smokeResult.bridge, 'bridge telemetry must be reported');
     assert.deepEqual(smokeResult.bridge, {
       commands: 20,
@@ -314,8 +319,24 @@ try {
       workersTerminated: 4,
       progressCallbacks: 4
     });
+    assert.ok(smokeResult.clientLifecycle, 'clientLifecycle telemetry must be reported in client mode');
+    assert.deepEqual(smokeResult.clientLifecycle, {
+      workersCreated: 4,
+      terminateCalls: 4,
+      cancelledStages: ['begin', 'append', 'finalize'],
+      cancelCodes: ['OPERATION_ABORTED', 'OPERATION_ABORTED', 'OPERATION_ABORTED'],
+      requestTypes: [
+        ['BEGIN'],
+        ['BEGIN', 'APPEND'],
+        ['BEGIN', 'APPEND', 'APPEND', 'APPEND', 'FINALIZE']
+      ],
+      acceptedArtifactsAfterAbort: 0,
+      crashCode: 'FORMAT_SERIALIZATION_FAILED',
+      crashWorkerErrors: 1
+    });
   } else {
     // Genuine native transfer detachment observation: exactly four zeros
+    assert.equal(smokeResult.clientLifecycle, undefined, 'clientLifecycle must be omitted in default mode');
     assert.ok(Array.isArray(smokeResult.transferredBufferByteLengths), 'transferredBufferByteLengths must be reported');
     assert.deepEqual(
       smokeResult.transferredBufferByteLengths,
@@ -683,6 +704,7 @@ try {
     console.log('[T36a E2E] Production worker bridge verified: 20 commands, 16 ACKs, 4 PROGRESS, 3 STAGED, 1 ERROR, 0 unexpected.');
   } else if (isClient) {
     console.log('[T36a E2E] Production worker client verified: 4 workers created/terminated, 4 progress callbacks, 20 commands, 16 ACKs, 4 PROGRESS, 3 STAGED, 1 ERROR, 0 unexpected.');
+    console.log('[T36a E2E] Client lifecycle verified: 4 workers created/terminated, cancelled stages (begin, append, finalize) with OPERATION_ABORTED, verified request traces, 0 artifacts accepted after abort, crash failed with FORMAT_SERIALIZATION_FAILED and 1 worker error event.');
   } else {
     console.log('[T36a E2E] Native transfer observation: 4 buffers detached ([0, 0, 0, 0]).');
   }

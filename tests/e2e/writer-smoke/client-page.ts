@@ -15,6 +15,7 @@ import type { Artifact, NormalizedChunk } from '../../../src/contracts/domain.ts
 import { DomainError, SAFE_ERROR_MESSAGES } from '../../../src/contracts/errors.ts';
 import type { WriterPort } from '../../../src/contracts/ports.ts';
 import { createWorkerWriterClient } from '../../../src/runtime/worker-client.ts';
+import { parseWorkerCommand } from '../../../src/runtime/worker-envelope.ts';
 import { parseWorkerReply } from '../../../src/runtime/worker-reply-envelope.ts';
 import {
   chunk30,
@@ -80,6 +81,15 @@ let workersCreated = 0;
 let workersTerminated = 0;
 let progressCallbacks = 0;
 
+let lifecycleWorkersCreated = 0;
+let lifecycleTerminateCalls = 0;
+const cancelledStages: ('begin' | 'append' | 'finalize')[] = [];
+const cancelCodes: string[] = [];
+const cancelRequestTypes: string[][] = [];
+let acceptedArtifactsAfterAbort = 0;
+let crashCode: string | null = null;
+let crashWorkerErrors = 0;
+
 const bridgeCounts: SmokeBridgeCounts = {
   commands: 0,
   acks: 0,
@@ -121,6 +131,16 @@ function handleFailure(errMsg: string): void {
       workersCreated,
       workersTerminated,
       progressCallbacks
+    },
+    clientLifecycle: {
+      workersCreated: lifecycleWorkersCreated,
+      terminateCalls: lifecycleTerminateCalls,
+      cancelledStages,
+      cancelCodes,
+      requestTypes: cancelRequestTypes,
+      acceptedArtifactsAfterAbort,
+      crashCode,
+      crashWorkerErrors
     }
   };
   const statusEl = document.getElementById('smoke-status');
@@ -193,6 +213,74 @@ function createSmokeWorker(expectedJobId: string, expectedGeneration: number): W
     } else {
       bridgeCounts.unexpected++;
     }
+  };
+
+  return worker;
+}
+
+function createLifecycleCancelWorker(label: string): {
+  worker: Worker;
+  requestTypes: string[];
+} {
+  const worker = new Worker(
+    new URL('../../../src/runtime/writer-worker.ts', import.meta.url),
+    { type: 'module' }
+  );
+  lifecycleWorkersCreated++;
+  outstandingWorkers.add(worker);
+
+  const origTerminate = worker.terminate.bind(worker);
+  worker.terminate = () => {
+    lifecycleTerminateCalls++;
+    origTerminate();
+    outstandingWorkers.delete(worker);
+  };
+
+  worker.onerror = () => {
+    handleFailure(`Unexpected native worker error event in ${label}`);
+  };
+
+  worker.onmessageerror = () => {
+    handleFailure(`Unexpected native worker messageerror event in ${label}`);
+  };
+
+  const requestTypes: string[] = [];
+  const origPostMessage = worker.postMessage.bind(worker);
+  worker.postMessage = ((message: unknown, transferOrOptions?: unknown) => {
+    const parsed = parseWorkerCommand(message);
+    if (parsed) {
+      requestTypes.push(parsed.type);
+    }
+    if (transferOrOptions !== undefined) {
+      return (origPostMessage as any)(message, transferOrOptions);
+    }
+    return (origPostMessage as any)(message);
+  }) as typeof worker.postMessage;
+
+  return { worker, requestTypes };
+}
+
+function createCrashWorker(): Worker {
+  const worker = new Worker(
+    new URL('./client-crash-worker.ts', import.meta.url),
+    { type: 'module' }
+  );
+  lifecycleWorkersCreated++;
+  outstandingWorkers.add(worker);
+
+  const origTerminate = worker.terminate.bind(worker);
+  worker.terminate = () => {
+    lifecycleTerminateCalls++;
+    origTerminate();
+    outstandingWorkers.delete(worker);
+  };
+
+  worker.onerror = () => {
+    crashWorkerErrors++;
+  };
+
+  worker.onmessageerror = () => {
+    handleFailure('Unexpected native worker messageerror event in crash worker');
   };
 
   return worker;
@@ -330,8 +418,181 @@ async function runClientSmoke(): Promise<void> {
       throw new Error(`Expected FORMAT_SERIALIZATION_FAILED, got ${caughtErrorCode}`);
     }
 
+    // 5. Lifecycle Scenarios (T36d2b)
+    // 1 begin pending: start actual client.begin, attach outcome handlers, immediately client.abort synchronously before yielding to messages.
+    const cancel1 = createLifecycleCancelWorker('cancel stage begin');
+    const clientLifecycle1 = createWorkerWriterClient({
+      worker: cancel1.worker,
+      jobId: 'smoke_job_1',
+      generation: 4,
+      timeoutMs: 10000,
+      maxBytes: 64 * 1024 * 1024
+    });
+    ownedClients.add(clientLifecycle1);
+
+    const ac1 = new AbortController();
+    const ctx1 = createContext('json', ac1.signal);
+    let p1Resolved = false;
+    let p1Rejection: unknown = null;
+    const p1 = clientLifecycle1.begin(ctx1, ac1.signal);
+    p1.then(
+      () => {
+        p1Resolved = true;
+      },
+      (err) => {
+        p1Rejection = err;
+      }
+    );
+    void clientLifecycle1.abort();
+
+    try {
+      await p1;
+    } catch {
+      // Expected rejection
+    }
+
+    if (p1Resolved) {
+      throw new Error('Cancel stage begin: client.begin unexpectedly resolved after abort');
+    }
+    if (!(p1Rejection instanceof DomainError)) {
+      throw new Error('Cancel stage begin: expected static DomainError rejection');
+    }
+    cancelledStages.push('begin');
+    cancelCodes.push(p1Rejection.code);
+    cancelRequestTypes.push(cancel1.requestTypes);
+    ownedClients.delete(clientLifecycle1);
+
+    // 2 append pending: await actual BEGIN ACK, start APPEND(chunk30), attach outcome handlers, immediately abort.
+    const cancel2 = createLifecycleCancelWorker('cancel stage append');
+    const clientLifecycle2 = createWorkerWriterClient({
+      worker: cancel2.worker,
+      jobId: 'smoke_job_1',
+      generation: 5,
+      timeoutMs: 10000,
+      maxBytes: 64 * 1024 * 1024
+    });
+    ownedClients.add(clientLifecycle2);
+
+    const ac2 = new AbortController();
+    const ctx2 = createContext('json', ac2.signal);
+    await clientLifecycle2.begin(ctx2, ac2.signal);
+
+    let p2Resolved = false;
+    let p2Rejection: unknown = null;
+    const p2 = clientLifecycle2.append(chunk30, ac2.signal);
+    p2.then(
+      () => {
+        p2Resolved = true;
+      },
+      (err) => {
+        p2Rejection = err;
+      }
+    );
+    void clientLifecycle2.abort();
+
+    try {
+      await p2;
+    } catch {
+      // Expected rejection
+    }
+
+    if (p2Resolved) {
+      throw new Error('Cancel stage append: client.append unexpectedly resolved after abort');
+    }
+    if (!(p2Rejection instanceof DomainError)) {
+      throw new Error('Cancel stage append: expected static DomainError rejection');
+    }
+    cancelledStages.push('append');
+    cancelCodes.push(p2Rejection.code);
+    cancelRequestTypes.push(cancel2.requestTypes);
+    ownedClients.delete(clientLifecycle2);
+
+    // 3 finalize pending: actual XLSX begin and all 3 append ACKs, start finalize matching report, attach handlers, immediately abort.
+    const cancel3 = createLifecycleCancelWorker('cancel stage finalize');
+    const clientLifecycle3 = createWorkerWriterClient({
+      worker: cancel3.worker,
+      jobId: 'smoke_job_1',
+      generation: 6,
+      timeoutMs: 10000,
+      maxBytes: 64 * 1024 * 1024
+    });
+    ownedClients.add(clientLifecycle3);
+
+    const ac3 = new AbortController();
+    const ctx3 = createContext('xlsx', ac3.signal);
+    const report3 = createReport(ctx3, 'xlsx');
+
+    await clientLifecycle3.begin(ctx3, ac3.signal);
+    await clientLifecycle3.append(chunk30, ac3.signal);
+    await clientLifecycle3.append(chunk10, ac3.signal);
+    await clientLifecycle3.append(chunk20, ac3.signal);
+
+    let p3Resolved = false;
+    let p3Rejection: unknown = null;
+    const p3 = clientLifecycle3.finalize(report3, ac3.signal);
+    p3.then(
+      (artifacts) => {
+        p3Resolved = true;
+        if (Array.isArray(artifacts)) {
+          acceptedArtifactsAfterAbort += artifacts.length;
+        }
+      },
+      (err) => {
+        p3Rejection = err;
+      }
+    );
+    void clientLifecycle3.abort();
+
+    try {
+      await p3;
+    } catch {
+      // Expected rejection
+    }
+
+    if (p3Resolved) {
+      throw new Error('Cancel stage finalize: client.finalize unexpectedly resolved after abort');
+    }
+    if (!(p3Rejection instanceof DomainError)) {
+      throw new Error('Cancel stage finalize: expected static DomainError rejection');
+    }
+    cancelledStages.push('finalize');
+    cancelCodes.push(p3Rejection.code);
+    cancelRequestTypes.push(cancel3.requestTypes);
+    ownedClients.delete(clientLifecycle3);
+
+    // 4 native crash: module Worker from client-crash-worker.ts which throws synthetic Error upon received message.
+    // Actual client.begin must reject static FORMAT_SERIALIZATION_FAILED; native worker error event observed exactly once.
+    const crashWorker = createCrashWorker();
+    const crashClient = createWorkerWriterClient({
+      worker: crashWorker,
+      jobId: 'smoke_job_1',
+      generation: 7,
+      timeoutMs: 10000,
+      maxBytes: 64 * 1024 * 1024
+    });
+    ownedClients.add(crashClient);
+
+    const acCrash = new AbortController();
+    const ctxCrash = createContext('json', acCrash.signal);
+    let crashResolved = false;
+    let crashRejection: unknown = null;
+    try {
+      await crashClient.begin(ctxCrash, acCrash.signal);
+      crashResolved = true;
+    } catch (err: unknown) {
+      crashRejection = err;
+    }
+
+    if (crashResolved) {
+      throw new Error('Crash scenario: client.begin unexpectedly resolved on worker crash');
+    }
+    if (!(crashRejection instanceof DomainError)) {
+      throw new Error('Crash scenario: expected static DomainError rejection');
+    }
+    crashCode = crashRejection.code;
+    ownedClients.delete(crashClient);
+
     // Settled clients must already have terminated their owned workers.
-    // Native cancellation/crash/late-message behavior is tested separately.
     if (finished) throw new Error('Client smoke stopped');
 
     if (bridgeCounts.unexpected > 0) {
@@ -345,6 +606,21 @@ async function runClientSmoke(): Promise<void> {
     }
     if (progressCallbacks !== 4) {
       throw new Error(`Progress callback count mismatch: expected 4, got ${progressCallbacks}`);
+    }
+    if (lifecycleWorkersCreated !== 4 || lifecycleTerminateCalls !== 4) {
+      throw new Error(`Lifecycle worker count mismatch: created ${lifecycleWorkersCreated}, terminated ${lifecycleTerminateCalls}`);
+    }
+    if (crashWorkerErrors !== 1) {
+      throw new Error(`Crash worker errors mismatch: expected 1, got ${crashWorkerErrors}`);
+    }
+    if (acceptedArtifactsAfterAbort !== 0) {
+      throw new Error(`Accepted artifacts after abort mismatch: expected 0, got ${acceptedArtifactsAfterAbort}`);
+    }
+    if (crashCode !== 'FORMAT_SERIALIZATION_FAILED') {
+      throw new Error(`Crash code mismatch: expected FORMAT_SERIALIZATION_FAILED, got ${crashCode}`);
+    }
+    if (cancelCodes.length !== 3 || cancelCodes.some((c) => c !== 'OPERATION_ABORTED')) {
+      throw new Error(`Cancel codes mismatch: expected three OPERATION_ABORTED, got ${JSON.stringify(cancelCodes)}`);
     }
 
     const jsonArt = jsonArtifacts[0]!;
@@ -371,6 +647,16 @@ async function runClientSmoke(): Promise<void> {
         workersCreated,
         workersTerminated,
         progressCallbacks
+      },
+      clientLifecycle: {
+        workersCreated: lifecycleWorkersCreated,
+        terminateCalls: lifecycleTerminateCalls,
+        cancelledStages,
+        cancelCodes,
+        requestTypes: cancelRequestTypes,
+        acceptedArtifactsAfterAbort,
+        crashCode,
+        crashWorkerErrors
       }
     };
 
