@@ -17,6 +17,8 @@ import { DomainError, toSafeDomainError } from '../contracts/errors.ts';
 import { isExportReport } from '../contracts/validation.ts';
 import type { PreparedSheet } from './prepare.ts';
 import { mapCsvFilenames, mapWorksheetNames, type SheetInput } from './names.ts';
+import { snapshotExportReport } from './report-snapshot.ts';
+import { MAX_JSON_NODES } from './json-encoding.ts';
 
 export const PROVISIONAL_MAX_WARNINGS = 4096;
 
@@ -92,19 +94,12 @@ export function buildCompleteExportReport(
       if (k in context && (context as any)[k] !== undefined) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
     }
 
-    if (!report || typeof report !== 'object') {
-      throw new DomainError('FORMAT_SERIALIZATION_FAILED');
-    }
+    report = snapshotExportReport(report, { signal, maxNodes: MAX_JSON_NODES });
 
-    // Check warnings count early before schema walks huge warnings list or copying
-    const rawExport = (report as any).export;
-    if (rawExport && typeof rawExport === 'object' && Array.isArray(rawExport.warnings)) {
-      if (rawExport.warnings.length > maxWarnings) {
-        throw new DomainError('SIZE_LIMIT_EXCEEDED');
-      }
+    // Check warnings count early against captured report
+    if (report.export.warnings.length > maxWarnings) {
+      throw new DomainError('SIZE_LIMIT_EXCEEDED');
     }
-
-    if (!isExportReport(report)) throw new DomainError('FORMAT_SERIALIZATION_FAILED');
 
     if (report.export.complete !== true || report.export.format !== targetFormat) {
       throw new DomainError('FORMAT_SERIALIZATION_FAILED');
