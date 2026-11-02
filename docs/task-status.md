@@ -55,7 +55,7 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T36a real MV3 writer harness | `a6f443e`; isolated/main Chrome156 checks PASS; production bridge remains pending |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
-Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at the 1001-test checkpoint. Actual writer-client and raw production-protocol Chrome harnesses PASS; product controller/UI wiring remains pending. The legacy synthetic writer harness also passes.
+Latest integration checkpoint: strict typecheck, **1107/1107 tests across 62 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at the 1001-test checkpoint. Actual writer-client and raw production-protocol Chrome harnesses PASS, including native client cancellation/crash checks; product controller/UI wiring remains pending. The legacy synthetic writer harness also passes.
 
 ## Accepted runtime prerequisites
 
@@ -73,6 +73,7 @@ Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 fil
 | T30a phase graph | Six grouped tests; terminal jobs cannot reactivate, completed only after downloading. Full controller/browser completion proof still pending. See `docs/handoffs/T30a.md`. |
 | T30b page job owner | Eight focused tests after cleanup adoption correction; generation fences, supersession and idempotent best-effort cleanup. Full controller remains pending. See `docs/handoffs/T30b.md`. |
 | T30c request snapshot | 23 focused tests; immutable page-only request, preserved source order/absolute scopes, principal deliberately kept out of worker projection. See `docs/handoffs/T30c.md`. |
+| T30d writer context projection | 35 focused tests after lead oracle corrections; exact selected metadata/request binding, source order, no principal/observation/unselected data, bounded descriptor snapshots. See `docs/handoffs/T30d.md`. |
 | T23a scope estimate | Nine focused tests; exact BigInt positions/2D tile counts without materialized plans, unknown bytes. See `docs/handoffs/T23a.md`. |
 | T23b cumulative budget | Seven focused tests; atomic counters and permanent failure latch. Controller/stream accounting and calibration pending. See `docs/handoffs/T23b.md`. |
 | T24b3b report snapshot | Original source-binding getter regression red then green; 29 snapshot tests plus regression. Captured metadata precedes all format binding. Non-enumerable data-only extras are omitted for existing projection compatibility; accessors rejected. See `docs/handoffs/T24b3b.md`. |
@@ -81,10 +82,11 @@ Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 fil
 
 ## Current work and next boundaries
 
-- **Accepted checkpoint**: root strict typecheck, **1049/1049 tests across 60 files**, schema check and all three actual Chrome harness modes PASS. No product download or live acquisition is exercised.
-- **Terminal task awaiting integration review**: T30d sanitized WriterContext projection (`5f7aaacf-e1dc-4825-98c9-1b049f51673d`, isolated `.local/worktrees/t30d`). T36d2b native cancellation/crash checks accepted after independent strict typecheck and all three Chrome modes PASS.
+- **Accepted checkpoint**: root strict typecheck, **1107/1107 tests across 62 files**, schema check and all three actual Chrome harness modes PASS. No product download or live acquisition is exercised.
+- **Latest accepted leaves**: T30d sanitized WriterContext projection and T36d2b native cancellation/crash checks. Both Antigravity jobs are terminal and independently reviewed; no active delegated job remains.
 - T36d1 implementation and correction jobs ended with backend DNS errors after saving completed files; lead reviewed actual code, corrected remaining constructor/signal/context ownership issues and independently verified the checkpoint above. No model fallback or new user approval was used.
-- Next bounded work: integrate sanitized context, then controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
+- Next bounded work: controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
+- Clarified account setup with the user: eventual end users sign in and grant access; Cloud API/OAuth client registration is one-time application configuration by the developer, not a project each user must create. No Cloud resource/account change has been authorized or performed.
 - Google adapters/permission gates, limit calibration, lifecycle/privacy audit and release checks remain pending. G1/G7 still require the user's Google/OAuth/live tenant setup; fixtures do not approve live permission or release claims.
 - Open only the assigned task card and relevant helper signatures/handoff. Detailed corrections remain in handoffs and Git history, not mandatory context for every small task.
 
