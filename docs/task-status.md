@@ -76,11 +76,12 @@ Latest integration checkpoint after report-capture correction and worker leaves:
 | T23b cumulative budget | Seven focused tests; atomic counters and permanent failure latch. Controller/stream accounting and calibration pending. See `docs/handoffs/T23b.md`. |
 | T24b3b report snapshot | Original source-binding getter regression red then green; 29 snapshot tests plus regression. Captured metadata precedes all format binding. Non-enumerable data-only extras are omitted for existing projection compatibility; accessors rejected. See `docs/handoffs/T24b3b.md`. |
 | T31a artifact action selection | 25 focused tests; default single CSV primary only, explicit metadata companion only, multi-CSV ZIP, XLSX pair. Selection grants no publication authority. See `docs/handoffs/T31a.md`. |
+| T31b1 completion observer | 40 focused tests after descriptor/query-adoption corrections; observes only owned ID/state, first terminal wins, timeout/missing evidence remains unverified. Native download/publisher evidence pending. See `docs/handoffs/T31b1.md`. |
 
 ## Current work and next boundaries
 
 - **Accepted checkpoint**: root strict typecheck, **1001/1001 tests across 58 files**, schema check and scaffold build PASS; main native production-protocol Chrome harness PASS. Build output path verified inside workspace before cleanup. This still does not exercise native worker-client orchestration or a product download.
-- **Active bounded tasks**: T36d2a native client Chrome harness (`b7b073dd-657b-4748-bbea-fd524a83404d`, root); T31b1 download completion observer (`7f45c2a9-8f6a-4bff-8434-79ff2c8a68aa`, isolated). Review only after terminal handoffs.
+- **Active bounded tasks**: T36d2a native client Chrome harness (`b7b073dd-657b-4748-bbea-fd524a83404d`, root); T30c immutable page request parser (`00304d25-a083-4a34-b12f-9722c7147c41`, isolated). Review only after terminal handoffs.
 - T36d1 implementation and correction jobs ended with backend DNS errors after saving completed files; lead reviewed actual code, corrected remaining constructor/signal/context ownership issues and independently verified the checkpoint above. No model fallback or new user approval was used.
 - Next bounded work: native client Chrome verification, then controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
 - Google adapters/permission gates, limit calibration, lifecycle/privacy audit and release checks remain pending. G1/G7 still require the user's Google/OAuth/live tenant setup; fixtures do not approve live permission or release claims.
