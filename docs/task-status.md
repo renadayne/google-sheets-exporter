@@ -72,6 +72,7 @@ Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 fil
 | T36d1/2a one-job client | 33 focused tests after review corrections; safe snapshots, permanent terminal latch and per-op cleanup. Actual Chrome client JSON/CSV/XLSX oracles PASS; four workers/four terminate calls/four progress callbacks. Native cancel/crash still pending. See `docs/handoffs/T36d1.md` and `docs/handoffs/T36d2a.md`. |
 | T30a phase graph | Six grouped tests; terminal jobs cannot reactivate, completed only after downloading. Full controller/browser completion proof still pending. See `docs/handoffs/T30a.md`. |
 | T30b page job owner | Eight focused tests after cleanup adoption correction; generation fences, supersession and idempotent best-effort cleanup. Full controller remains pending. See `docs/handoffs/T30b.md`. |
+| T30c request snapshot | 23 focused tests; immutable page-only request, preserved source order/absolute scopes, principal deliberately kept out of worker projection. See `docs/handoffs/T30c.md`. |
 | T23a scope estimate | Nine focused tests; exact BigInt positions/2D tile counts without materialized plans, unknown bytes. See `docs/handoffs/T23a.md`. |
 | T23b cumulative budget | Seven focused tests; atomic counters and permanent failure latch. Controller/stream accounting and calibration pending. See `docs/handoffs/T23b.md`. |
 | T24b3b report snapshot | Original source-binding getter regression red then green; 29 snapshot tests plus regression. Captured metadata precedes all format binding. Non-enumerable data-only extras are omitted for existing projection compatibility; accessors rejected. See `docs/handoffs/T24b3b.md`. |
@@ -81,7 +82,7 @@ Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 fil
 ## Current work and next boundaries
 
 - **Accepted checkpoint**: root strict typecheck, **1049/1049 tests across 60 files**, schema check and all three actual Chrome harness modes PASS. No product download or live acquisition is exercised.
-- **Under lead review**: T30c immutable page request parser (`00304d25-a083-4a34-b12f-9722c7147c41`, isolated) has ended. Native client cancel/crash is the next bounded worker check.
+- **Active bounded task**: T36d2b native client cancellation/crash checks (`74128e83-257d-44a2-9df9-1615004cdbc0`, root). Review only after terminal handoff. Next controller prerequisite: sanitized WriterContext projection from the accepted request and selected workbook metadata.
 - T36d1 implementation and correction jobs ended with backend DNS errors after saving completed files; lead reviewed actual code, corrected remaining constructor/signal/context ownership issues and independently verified the checkpoint above. No model fallback or new user approval was used.
 - Next bounded work: native client Chrome verification, then controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
 - Google adapters/permission gates, limit calibration, lifecycle/privacy audit and release checks remain pending. G1/G7 still require the user's Google/OAuth/live tenant setup; fixtures do not approve live permission or release claims.
