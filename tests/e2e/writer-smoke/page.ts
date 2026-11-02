@@ -6,40 +6,7 @@
  * terminates worker on completion/error, and exposes window.__WRITER_SMOKE__ for CDP runner.
  */
 
-interface CspViolationRecord {
-  blockedURI: string;
-  violatedDirective: string;
-  effectiveDirective: string;
-}
-
-interface SmokeArtifactPayload {
-  filename: string;
-  mimeType: string;
-  byteLength: number;
-  base64: string;
-}
-
-interface SmokeResult {
-  done: boolean;
-  error: string | null;
-  cspViolations: CspViolationRecord[];
-  pageErrors: string[];
-  transferredBufferByteLengths?: number[] | undefined;
-  jsonArtifact?: SmokeArtifactPayload | undefined;
-  csvArtifacts?: SmokeArtifactPayload[] | undefined;
-  xlsxArtifacts?: SmokeArtifactPayload[] | undefined;
-  negativeResult?: {
-    caughtErrorCode: string | null;
-  } | undefined;
-}
-
-declare global {
-  interface Window {
-    __cspViolations: CspViolationRecord[];
-    __pageErrors: string[];
-    __WRITER_SMOKE__: SmokeResult | null;
-  }
-}
+import type { SmokeResult } from './types.ts';
 
 // 1. Install CSP and error observers BEFORE starting worker
 window.__cspViolations = [];
@@ -86,12 +53,13 @@ window.addEventListener('unload', () => {
 function handleFailure(errMsg: string): void {
   worker.terminate();
   window.__pageErrors.push(errMsg);
-  window.__WRITER_SMOKE__ = {
+  const failureResult: SmokeResult = {
     done: true,
     error: errMsg,
     cspViolations: window.__cspViolations,
     pageErrors: window.__pageErrors
   };
+  window.__WRITER_SMOKE__ = failureResult;
   const statusEl = document.getElementById('smoke-status');
   if (statusEl) statusEl.textContent = 'error';
 }
@@ -122,7 +90,7 @@ function finalizeIfReady(): void {
   const csvArts = data.csvArtifacts || [];
   const xlsxArts = data.xlsxArtifacts || [];
 
-  window.__WRITER_SMOKE__ = {
+  const completedResult: SmokeResult = {
     done: true,
     error: null,
     cspViolations: window.__cspViolations,
@@ -148,6 +116,7 @@ function finalizeIfReady(): void {
     })),
     negativeResult: data.negativeResult
   };
+  window.__WRITER_SMOKE__ = completedResult;
 
   // Terminate worker after receiving observation
   worker.terminate();

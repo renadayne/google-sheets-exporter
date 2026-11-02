@@ -45,3 +45,13 @@ The fixture has source IDs30/10/20, a middle blank tab, one offset rectangle and
 - The test builds into ignored `.local/writer-browser-smoke/<run>/dist`; generated profiles, downloads directories and bundles are not committed. Playwright's generated temporary profile is redirected into owned workspace scratch and checked via the actual browser command line.
 - Current production UI/worker remains the unconfigured scaffold. Live G1/G7, desktop CSV execution/XLSX repair checks, memory/throughput calibration and production worker/controller/download integration remain pending.
 - Dependency audit findings remain as recorded in [writer-dependencies.md](writer-dependencies.md). Successful smoke execution does not prove advisory paths unreachable or approve release.
+
+## T36c3b: native production protocol extension (2026-11-02)
+
+Tech lead independently ran `node tests/e2e/writer-browser-smoke.mjs --bridge` and the default mode in the isolated reviewed checkout on Chrome156.0.8078.74 / Node24.14.0. Both PASS after cleanup and Vite8 input-option corrections.
+
+Bridge mode loads the actual `src/runtime/writer-worker.ts` entry and sends version1 BEGIN/APPEND/FINALIZE messages through a native dedicated module worker. Three jobs use increasing generations and actual local JSON/CSV/XLSX WriterPorts. A fourth job has incomplete matching-job coverage and returns only the expected serialization error. Observed counts: 20 valid commands, 16 ACKs, 4 PROGRESS, 3 STAGED_ARTIFACTS, 1 ERROR, 0 unexpected replies. Malformed/auth-contaminated and stale request examples produce no accepted output.
+
+The existing independent full JSON, CSV/ZIP and XLSX/OOXML oracles run unchanged in both modes. Bridge results: JSON1996B, CSVZIP1180B, XLSX7802B plus report862B; zero captured page/CSP/worker error events, and owned browser teardown PASS. Sizes describe this tiny synthetic fixture only.
+
+Production replies do not expose sender detachment telemetry. Bridge mode omits that field and makes no direct sender-detachment claim; the host's native structuredClone unit check and default harness's actual four-buffer observation are separate evidence. Worker-client orchestration, native cancel/crash behavior, controller/download integration, live G1/G7 and calibration remain pending. The product UI still uses the unconfigured scaffold.

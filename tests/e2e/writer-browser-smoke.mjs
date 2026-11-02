@@ -21,6 +21,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { isExportReport, isJsonExportDocument } from '../../src/contracts/validation.ts';
 
 const buildOnly = process.argv.includes('--build-only');
+const isBridge = process.argv.includes('--bridge');
 
 const workspaceRoot = resolve(import.meta.dirname, '../..');
 const runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -90,7 +91,10 @@ try {
     build: {
       outDir,
       emptyOutDir: true,
-      sourcemap: false
+      sourcemap: false,
+      rolldownOptions: isBridge
+        ? { input: resolve(workspaceRoot, 'tests/e2e/writer-smoke/bridge.html') }
+        : undefined
     },
     worker: {
       format: 'es'
@@ -225,7 +229,8 @@ try {
   await sendToTarget('Security.enable').catch(() => {});
 
   // Navigate to extension page after observers are armed
-  const pageUrl = `chrome-extension://${extensionId}/index.html`;
+  const pageFile = isBridge ? 'bridge.html' : 'index.html';
+  const pageUrl = `chrome-extension://${extensionId}/${pageFile}`;
   console.log(`[T36a E2E] Navigating target to smoke extension page: ${pageUrl}`);
   await sendToTarget('Page.navigate', { url: pageUrl });
 
@@ -271,13 +276,27 @@ try {
   console.log('[T36a E2E] Observed page console and runtime errors: 0.');
   console.log('[T36a E2E] Note: Dedicated worker runs in worker thread context; worker error events (onerror, onmessageerror) verified 0; page target CDP observes page runtime/console.');
 
-  // Genuine native transfer detachment observation: exactly four zeros
-  assert.ok(Array.isArray(smokeResult.transferredBufferByteLengths), 'transferredBufferByteLengths must be reported');
-  assert.deepEqual(
-    smokeResult.transferredBufferByteLengths,
-    [0, 0, 0, 0],
-    'All 4 transferred ArrayBuffers must have byteLength == 0 after postMessage transfer'
-  );
+  if (isBridge) {
+    console.log('[T36a E2E] production worker sender detachment telemetry unavailable; host native structuredClone checked separately');
+    assert.equal(smokeResult.transferredBufferByteLengths, undefined, 'transferredBufferByteLengths must be omitted in bridge mode');
+    assert.ok(smokeResult.bridge, 'bridge telemetry must be reported');
+    assert.deepEqual(smokeResult.bridge, {
+      commands: 20,
+      acks: 16,
+      progress: 4,
+      staged: 3,
+      errors: 1,
+      unexpected: 0
+    });
+  } else {
+    // Genuine native transfer detachment observation: exactly four zeros
+    assert.ok(Array.isArray(smokeResult.transferredBufferByteLengths), 'transferredBufferByteLengths must be reported');
+    assert.deepEqual(
+      smokeResult.transferredBufferByteLengths,
+      [0, 0, 0, 0],
+      'All 4 transferred ArrayBuffers must have byteLength == 0 after postMessage transfer'
+    );
+  }
 
   // Negative test: verify FORMAT_SERIALIZATION_FAILED was caught on coverage gap
   assert.ok(smokeResult.negativeResult, 'Negative test result must be reported');
@@ -634,7 +653,11 @@ try {
 
   console.log('[T36a E2E] Output oracles verified; closing the owned browser.');
   console.log(`[T36a E2E] Formats verified: JSON (${jsonBytes.length}B), CSV ZIP (${csvZipBytes.length}B, 3 tabs), XLSX (${xlsxBytes.length}B, 3 tabs) + companion report (${companionBytes.length}B).`);
-  console.log('[T36a E2E] Native transfer observation: 4 buffers detached ([0, 0, 0, 0]).');
+  if (isBridge) {
+    console.log('[T36a E2E] Production worker bridge verified: 20 commands, 16 ACKs, 4 PROGRESS, 3 STAGED, 1 ERROR, 0 unexpected.');
+  } else {
+    console.log('[T36a E2E] Native transfer observation: 4 buffers detached ([0, 0, 0, 0]).');
+  }
   console.log('[T36a E2E] Negative test verified: caught FORMAT_SERIALIZATION_FAILED on coverage gap.');
   console.log('[T36a E2E] Zero CSP violations, zero page/console errors, inert formulas confirmed.');
 } finally {
