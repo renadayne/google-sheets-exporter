@@ -24,6 +24,12 @@ export interface SmokeBridgeCounts {
   unexpected: number;
 }
 
+export interface SmokeClientCounts {
+  workersCreated: number;
+  workersTerminated: number;
+  progressCallbacks: number;
+}
+
 export interface SmokeResult {
   done: boolean;
   error: string | null;
@@ -37,6 +43,7 @@ export interface SmokeResult {
     caughtErrorCode: string | null;
   } | undefined;
   bridge?: SmokeBridgeCounts | undefined;
+  client?: SmokeClientCounts | undefined;
 }
 
 declare global {

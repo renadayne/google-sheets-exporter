@@ -55,7 +55,7 @@ See corresponding `docs/handoffs/Txx.md` for exact APIs and checks. Limits are p
 | T36a real MV3 writer harness | `a6f443e`; isolated/main Chrome156 checks PASS; production bridge remains pending |
 | T29a/b pure XLSX representability guards | `85b83d2` / `959147a`; conservative precision screen, not desktop proof |
 
-Latest integration checkpoint after report-capture correction and worker leaves: strict typecheck, **1001/1001 tests across 58 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build passed at this checkpoint. Dedicated writer entry is available; client/UI wiring and its actual Chrome bridge execution remain pending. Separate T36a synthetic writer harness passes real Chrome execution.
+Latest integration checkpoint: strict typecheck, **1049/1049 tests across 60 files** and schema check PASS. Schema hash prefix `7c4143a7d76f9252`. Scaffold production build last passed at the 1001-test checkpoint. Actual writer-client and raw production-protocol Chrome harnesses PASS; product controller/UI wiring remains pending. The legacy synthetic writer harness also passes.
 
 ## Accepted runtime prerequisites
 
@@ -69,7 +69,7 @@ Latest integration checkpoint after report-capture correction and worker leaves:
 | T36c1 host | Six actual writer/structuredClone tests; transfer lists and sender detachment. See `docs/handoffs/T36c1.md`. |
 | T36c2 dedicated entry | Six entry tests plus seven legacy PING tests; measured worker-only installation and cleanup. See `docs/handoffs/T36c2.md`. |
 | T36c3a/b browser evidence | Fixture extraction preserved data/execution. Actual production protocol passes Chrome156 independent JSON/CSV/OOXML oracles; 20 commands, 16ACK, 4PROGRESS, 3STAGED, 1ERROR, 0unexpected. Both Chrome modes pass; no direct production sender-detachment telemetry. See `docs/handoffs/T36c3b.md` and [browser evidence](evidence/root-writer-browser.md). |
-| T36d1 one-job client | 33 focused tests after review corrections; safe snapshots, permanent terminal latch, per-op cleanup and immediate terminate-on-abort. Worker timeout is serialization failure, not a network request. Native client Chrome execution remains pending. See `docs/handoffs/T36d1.md`. |
+| T36d1/2a one-job client | 33 focused tests after review corrections; safe snapshots, permanent terminal latch and per-op cleanup. Actual Chrome client JSON/CSV/XLSX oracles PASS; four workers/four terminate calls/four progress callbacks. Native cancel/crash still pending. See `docs/handoffs/T36d1.md` and `docs/handoffs/T36d2a.md`. |
 | T30a phase graph | Six grouped tests; terminal jobs cannot reactivate, completed only after downloading. Full controller/browser completion proof still pending. See `docs/handoffs/T30a.md`. |
 | T30b page job owner | Eight focused tests after cleanup adoption correction; generation fences, supersession and idempotent best-effort cleanup. Full controller remains pending. See `docs/handoffs/T30b.md`. |
 | T23a scope estimate | Nine focused tests; exact BigInt positions/2D tile counts without materialized plans, unknown bytes. See `docs/handoffs/T23a.md`. |
@@ -80,8 +80,8 @@ Latest integration checkpoint after report-capture correction and worker leaves:
 
 ## Current work and next boundaries
 
-- **Accepted checkpoint**: root strict typecheck, **1001/1001 tests across 58 files**, schema check and scaffold build PASS; main native production-protocol Chrome harness PASS. Build output path verified inside workspace before cleanup. This still does not exercise native worker-client orchestration or a product download.
-- **Active bounded tasks**: T36d2a native client Chrome harness (`b7b073dd-657b-4748-bbea-fd524a83404d`, root); T30c immutable page request parser (`00304d25-a083-4a34-b12f-9722c7147c41`, isolated). Review only after terminal handoffs.
+- **Accepted checkpoint**: root strict typecheck, **1049/1049 tests across 60 files**, schema check and all three actual Chrome harness modes PASS. No product download or live acquisition is exercised.
+- **Under lead review**: T30c immutable page request parser (`00304d25-a083-4a34-b12f-9722c7147c41`, isolated) has ended. Native client cancel/crash is the next bounded worker check.
 - T36d1 implementation and correction jobs ended with backend DNS errors after saving completed files; lead reviewed actual code, corrected remaining constructor/signal/context ownership issues and independently verified the checkpoint above. No model fallback or new user approval was used.
 - Next bounded work: native client Chrome verification, then controller/download integration and UI. The product UI still uses the unconfigured T07 PING scaffold. Fixture protocols are not production acquisition gates.
 - Google adapters/permission gates, limit calibration, lifecycle/privacy audit and release checks remain pending. G1/G7 still require the user's Google/OAuth/live tenant setup; fixtures do not approve live permission or release claims.

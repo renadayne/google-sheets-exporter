@@ -55,3 +55,11 @@ Bridge mode loads the actual `src/runtime/writer-worker.ts` entry and sends vers
 The existing independent full JSON, CSV/ZIP and XLSX/OOXML oracles run unchanged in both modes. Bridge results: JSON1996B, CSVZIP1180B, XLSX7802B plus report862B; zero captured page/CSP/worker error events, and owned browser teardown PASS. Sizes describe this tiny synthetic fixture only.
 
 Production replies do not expose sender detachment telemetry. Bridge mode omits that field and makes no direct sender-detachment claim; the host's native structuredClone unit check and default harness's actual four-buffer observation are separate evidence. Worker-client orchestration, native cancel/crash behavior, controller/download integration, live G1/G7 and calibration remain pending. The product UI still uses the unconfigured scaffold.
+
+## T36d2a: native worker-client extension (2026-11-02)
+
+Tech lead independently ran `node tests/e2e/writer-browser-smoke.mjs --client`, `--bridge` and the default mode on main after review corrections: all PASS on Chrome156.0.8078.74 / Node24.14.0. Client mode loads the actual `createWorkerWriterClient` with a fresh native production module worker for each of three formats and the negative coverage case. Existing independent output oracles remain unchanged.
+
+Observed client counts: four workers created, exactly four native terminate invocations and four validated progress callbacks. Native wire counts remain 20commands/16ACK/4PROGRESS/3STAGED/1ERROR/0unexpected. The coverage failure reaches the actual client as a static DomainError. JSON1996B, CSVZIP1180B and XLSX7803B+report862B match full typed/coordinate/text oracles. Page and worker bundles were153.62kB and1132.05kB; these are fixture packaging observations, not memory or throughput bounds.
+
+Failure aborts client promises before fallback worker cleanup; completion is recorded after artifact formatting. No direct sender-detachment telemetry is claimed in client mode. Native cancellation/crash, browser downloads, controller/UI integration, live Google evidence and calibration remain pending. No file publication or OAuth occurs in these tests.

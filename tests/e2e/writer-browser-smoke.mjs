@@ -22,6 +22,12 @@ import { isExportReport, isJsonExportDocument } from '../../src/contracts/valida
 
 const buildOnly = process.argv.includes('--build-only');
 const isBridge = process.argv.includes('--bridge');
+const isClient = process.argv.includes('--client');
+
+if (isBridge && isClient) {
+  console.error('[T36a E2E] Flags --bridge and --client are mutually exclusive.');
+  process.exit(1);
+}
 
 const workspaceRoot = resolve(import.meta.dirname, '../..');
 const runId = `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -94,7 +100,9 @@ try {
       sourcemap: false,
       rolldownOptions: isBridge
         ? { input: resolve(workspaceRoot, 'tests/e2e/writer-smoke/bridge.html') }
-        : undefined
+        : isClient
+          ? { input: resolve(workspaceRoot, 'tests/e2e/writer-smoke/client.html') }
+          : undefined
     },
     worker: {
       format: 'es'
@@ -229,7 +237,7 @@ try {
   await sendToTarget('Security.enable').catch(() => {});
 
   // Navigate to extension page after observers are armed
-  const pageFile = isBridge ? 'bridge.html' : 'index.html';
+  const pageFile = isBridge ? 'bridge.html' : isClient ? 'client.html' : 'index.html';
   const pageUrl = `chrome-extension://${extensionId}/${pageFile}`;
   console.log(`[T36a E2E] Navigating target to smoke extension page: ${pageUrl}`);
   await sendToTarget('Page.navigate', { url: pageUrl });
@@ -287,6 +295,24 @@ try {
       staged: 3,
       errors: 1,
       unexpected: 0
+    });
+  } else if (isClient) {
+    console.log('[T36a E2E] production worker client sender detachment telemetry unavailable; host native structuredClone checked separately');
+    assert.equal(smokeResult.transferredBufferByteLengths, undefined, 'transferredBufferByteLengths must be omitted in client mode');
+    assert.ok(smokeResult.bridge, 'bridge telemetry must be reported');
+    assert.deepEqual(smokeResult.bridge, {
+      commands: 20,
+      acks: 16,
+      progress: 4,
+      staged: 3,
+      errors: 1,
+      unexpected: 0
+    });
+    assert.ok(smokeResult.client, 'client telemetry must be reported in client mode');
+    assert.deepEqual(smokeResult.client, {
+      workersCreated: 4,
+      workersTerminated: 4,
+      progressCallbacks: 4
     });
   } else {
     // Genuine native transfer detachment observation: exactly four zeros
@@ -655,6 +681,8 @@ try {
   console.log(`[T36a E2E] Formats verified: JSON (${jsonBytes.length}B), CSV ZIP (${csvZipBytes.length}B, 3 tabs), XLSX (${xlsxBytes.length}B, 3 tabs) + companion report (${companionBytes.length}B).`);
   if (isBridge) {
     console.log('[T36a E2E] Production worker bridge verified: 20 commands, 16 ACKs, 4 PROGRESS, 3 STAGED, 1 ERROR, 0 unexpected.');
+  } else if (isClient) {
+    console.log('[T36a E2E] Production worker client verified: 4 workers created/terminated, 4 progress callbacks, 20 commands, 16 ACKs, 4 PROGRESS, 3 STAGED, 1 ERROR, 0 unexpected.');
   } else {
     console.log('[T36a E2E] Native transfer observation: 4 buffers detached ([0, 0, 0, 0]).');
   }
