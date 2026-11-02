@@ -59,7 +59,8 @@ Latest integration checkpoint after T24d2: strict typecheck, **730/730 tests acr
 
 ## Current work and next boundaries
 
-- **No active Antigravity job at this checkpoint.** All accepted writer leaves and the synthetic browser harness are committed separately and pushed to origin/main.
+- **T36b1 accepted**: request-envelope parser, unknown payloads preserved for later domain validation; strict typecheck and 34 focused tests PASS after lead corrections. See `docs/handoffs/T36b1.md`. Dispatcher/client remain pending.
+- **Active bounded task**: T23a offline scope estimator in `.local/worktrees/t23a` (`3184907e-c80d-43cf-80ae-9c2a05556ef9`). T30a pure job phase transitions ended (`1f91cf33-bf00-45ab-8ff6-85d2f99eed97`) and is under lead review. Neither enables live acquisition or publication.
 - **T36a reviewed PASS for the synthetic harness** after correction job `11c5a68e-a4cd-4976-8bfb-fe35eb2abe69` ended with backend DNS failure. Lead verified actual source, fixed remaining launcher/oracle/cleanup issues and ran strict typecheck plus real Chrome independently on isolated/main checkouts. See [root browser evidence](evidence/root-writer-browser.md) and `docs/handoffs/T36a.md`.
 - All three local WriterPorts, complete report binding and CSV/XLSX packaging are available. Single CSV's staged companion is optional and must require an explicit metadata action; default export remains one CSV.
 - Next bounded work: production T36 message validation/worker bridge/client, then controller/download integration and UI. Follow existing versioned contracts; fixture harness messages are not production validation.
